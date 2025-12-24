@@ -92,5 +92,27 @@ git commit -m .
 ```
 在 git 仓库中创建一个文件  .gitignore
 ```
+# --- Obsidian 缓存与临时文件 ---
+.obsidian/cache/
+.obsidian/workspace.json
+.obsidian/workspaces/
+.obsidian/trash/
 
+# --- 忽略插件生成的特定数据（避免多设备同步冲突） ---
+.obsidian/plugins/obsidian-git/data.json
+.obsidian/plugins/recent-files-obsidian/data.json
+.obsidian/workspace-mobile.json
+.trash/
+.smart-env
+
+# --- 忽略操作系统生成的干扰文件 ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.bak
+*.tmp
+
+# --- 特殊配置：保留插件和主题，但忽略它们的缓存 ---
+!.obsidian/plugins/
+!.obsidian/themes/
 ```
