@@ -13,13 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Kubernetes 笔记.md",
+                "file": "Obsidian Git 搭建.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "Kubernetes 笔记"
+              "title": "Obsidian Git 搭建"
             }
           }
         ]
@@ -71,17 +71,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Kubernetes 笔记.md",
+                "file": "Obsidian Git 搭建.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Kubernetes 笔记 的大纲"
+              "title": "Obsidian Git 搭建 的大纲"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -90,10 +90,26 @@
   "right": {
     "id": "bf4742a8755d494d",
     "type": "split",
-    "children": [],
+    "children": [
+      {
+        "id": "e83c1d7fab716dfb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f11cd0573af3794c",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          }
+        ]
+      }
+    ],
     "direction": "horizontal",
-    "width": 265.5,
-    "collapsed": true
+    "width": 265.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -105,12 +121,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "a6fd2588895e3b9a",
+  "active": "80e46190990cb883",
   "lastOpenFiles": [
+    "Linux 系统运维/草稿.md",
+    "未命名.base",
+    "未命名 1.base",
+    "Obsidian Git 搭建.md",
     "Kubernetes 笔记.md",
     "Typora",
     "Kubernetes 笔记 1.md",
-    "未命名.md",
     "实验/实验目录.md",
     "Linux 系统运维/SSH 免密认证.md",
     "Linux 系统运维/VIM.md",
@@ -131,7 +150,6 @@
     "SRE学习笔记/Pod.md",
     "SRE学习笔记/Kubernetes 集群启动顺序.md",
     "Linux 系统运维/概念.md",
-    "Linux 系统运维/草稿.md",
     "K8s 故障录/kubeadm 集群故障一.md",
     "K8s 故障录",
     "K8s 学习框架.md",
@@ -144,7 +162,6 @@
     "通俗化解释记录",
     "问题记录",
     "Pasted image 20251128171041.png",
-    "Linux92-课堂笔记-v6.txt",
-    "未命名.base"
+    "Linux92-课堂笔记-v6.txt"
   ]
 }
