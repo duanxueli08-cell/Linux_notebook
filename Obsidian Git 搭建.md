@@ -116,3 +116,19 @@ desktop.ini
 !.obsidian/plugins/
 !.obsidian/themes/
 ```
+
+
+插件 —— Template 
+**安装插件**：在“社区插件”搜 `Templater` 安装并启用。
+在你的 Obsidian 仓库里建个文件夹，比如 Templates
+在 Templater 插件设置里，把 `Template folder location` 指向它。
+开启 `Trigger Templater on new file creation`（新建文件时自动触发）。
+
+- 开启 `Automatic jump to cursor`
+**原理：** 只有开启了这个，Templater 才会去扫描文档里的 `<% tp.file.cursor() %>` 并把光标跳过去。如果不开启，它就把它当成一串普通的文本字符（也就是你第一张图看到的样子）。
+- 开启 `Enable folder templates`
+**效果：** 以后只要在这个文件夹下“新建文件”，**模板会自动弹出填充**，连 `Alt + E` 都省了！这叫“自动化部署”。
+
+- **操作：** 点击 `Add new hotkey for template`，选择你常用的那个“运维笔记模板”。
+- **场景：** 然后去 Obsidian 系统的“快捷键”设置里，给它绑定一个组合键（比如 `Ctrl + Shift + T`）。
+- **效果：** 真正的 SRE 追求全键盘操作。想写笔记了，`Ctrl + N` 新建，`Ctrl + Shift + T` 喷涌模板，直接开写。
