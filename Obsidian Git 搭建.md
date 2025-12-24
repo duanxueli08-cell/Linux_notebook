@@ -3,23 +3,12 @@
 - 阿里云 （备选）
 - gitee
 
+## Windows 操作环境
 Windows 操作环境，需要下载 Git 工具
 (个人喜欢独立安装器，便携版也不错，根据自己需求选择)
 下载链接：
 https://github.com/git-for-windows/git/releases/download/v2.52.0.windows.1/Git-2.52.0-arm64.exe
 
-Windows 操作环境，还需要下载 Winget 工具
-（没有的话就不能通过 wget 下载，但是可以使用 Git 下载）
-在 Windows 上安装 WinGet 的稳定版本，Windows PowerShell 命令提示符作以下步骤
-```
-$progressPreference = 'silentlyContinue'
-Write-Host "Installing WinGet PowerShell module from PSGallery..."
-Install-PackageProvider -Name NuGet -Force | Out-Null
-Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
-Write-Host "Using Repair-WinGetPackageManager cmdlet to bootstrap WinGet..."
-Repair-WinGetPackageManager -AllUsers
-Write-Host "Done."
-```
 
 进入需要上传的文件夹中，位置以自己的为准！
 cd /c/Program Files/Obsidian/data/Obsidian Vault
@@ -74,8 +63,8 @@ git push -u origin main
 ```
 
 
-Obsidian 
-安装 Git 插件
+
+## 安装 Git 插件
 插件配置根据自己需求打开或关闭
 忽略权限指令
 ```
@@ -118,7 +107,8 @@ desktop.ini
 ```
 
 
-插件 —— Template 
+## 安装 Template  插件
+
 **安装插件**：在“社区插件”搜 `Templater` 安装并启用。
 在你的 Obsidian 仓库里建个文件夹，比如 Templates
 在 Templater 插件设置里，把 `Template folder location` 指向它。
@@ -132,3 +122,41 @@ desktop.ini
 - **操作：** 点击 `Add new hotkey for template`，选择你常用的那个“运维笔记模板”。
 - **场景：** 然后去 Obsidian 系统的“快捷键”设置里，给它绑定一个组合键（比如 `Ctrl + Shift + T`）。
 - **效果：** 真正的 SRE 追求全键盘操作。想写笔记了，`Ctrl + N` 新建，`Ctrl + Shift + T` 喷涌模板，直接开写。
+
+
+## 图床插件
+
+#### 第一步：核心组件安装 (The Infrastructure)
+
+1. **下载 PicGo (Windows 客户端)**：[PicGo 官网](https://picgo.github.io/PicGo-Doc/)。它是你的“图片路由器”。
+    
+2. **Obsidian 插件**：在插件市场搜 **`Image Auto Upload Plugin`**。它是你的“触发器”。
+    
+
+#### 第二步：配置 GitHub 仓库 (The Storage)
+
+1. 在 GitHub 新建一个仓库，名字叫 `Obsidian-Images`，设置为 **Public**（公开）。
+    
+2. **生成 Token**：
+    
+    - 进入 GitHub 设置 -> `Developer settings` -> `Personal access tokens` -> `Tokens (classic)`。
+        
+    - 勾选 `repo` 权限。**把生成的这一串字符复制下来，它只出现一次！**
+        
+
+#### 第三步：PicGo 联动 (The Configuration)
+
+打开 PicGo，选择“GitHub 图床”，填入：
+
+- **仓库名**：`你的用户名/Obsidian-Images`
+    
+- **分支**：`main`
+    
+- **Token**：刚才复制的那串字符。
+    
+- **存储路径**：可以写 `img/`（这样图片会自动归类到文件夹下）。
+    
+
+#### 第四步：最后一步“握手”
+
+在 Obsidian 的 `Image Auto Upload Plugin` 插件设置里，把 `Default upload service` 选为 **PicGo**。
