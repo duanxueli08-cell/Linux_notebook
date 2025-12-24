@@ -6520,11 +6520,13 @@ helm repo update
 helm repo list
 # 应用
 helm install mysql bitnami/mysql --version 10.3.0 --set primary.persistence.storageClass=sc-nfs
-
+helm install mysql bitnami/mysql --version 11.0.0 --set primary.persistence.storageClass=sc-nfs	
+# 查看
+kubectl get po
+kubectl describe po mysql-0   
 回退
-helm uninstall mysql
-kubectl delete pvc data-mysql-0
-kubectl get pvc,pod
+helm uninstall mysql && kubectl delete pvc data-mysql-0 && kubectl get pvc,pod
+
 ```
 
 注意事项：
