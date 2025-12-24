@@ -143,7 +143,9 @@ desktop.ini
         
     - 勾选 `repo` 权限。**把生成的这一串字符复制下来，它只出现一次！**
         
-
+```
+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
+```
 #### 第三步：PicGo 联动 (The Configuration)
 
 打开 PicGo，选择“GitHub 图床”，填入：
@@ -156,7 +158,32 @@ desktop.ini
     
 - **存储路径**：可以写 `img/`（这样图片会自动归类到文件夹下）。
     
-
+```
+duanxueli08-cell/Obsidian-Images
+main
+```
 #### 第四步：最后一步“握手”
 
 在 Obsidian 的 `Image Auto Upload Plugin` 插件设置里，把 `Default upload service` 选为 **PicGo**。
+
+### 🎨 效果演示：你以后怎么写笔记？
+
+1. **截图**：按下 `Win + Shift + S`。
+    
+2. **粘贴**：在 Obsidian 里 `Ctrl + V`。
+    
+3. **魔法发生**：你会看到右下角弹出 PicGo 的上传成功提示。
+    
+4. **结果**：你的笔记里自动生成了类似 `![](https://raw.githubusercontent.com/...)` 的链接。
+    
+
+**为什么要这么折腾？**
+
+- **高可用**：你的图片存在 GitHub 全球节点上，只要有网络，你的笔记去哪都能看。
+    
+- **极简**：你的 Obsidian 文件夹里再也不会有一堆乱七八糟的 `.png` 文件了，只有纯粹的 Markdown。
+
+图灵测试
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251224170803576.png)
+
+
