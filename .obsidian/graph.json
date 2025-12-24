@@ -1,0 +1,30 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:SRE学习笔记  ",
+      "color": {
+        "a": 1,
+        "rgb": 11492566
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": 1.1,
+  "nodeSizeMultiplier": 1.325,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.791666666666667,
+  "repelStrength": 13.75,
+  "linkStrength": 0.770833333333333,
+  "linkDistance": 285,
+  "scale": 1.4019828977760966,
+  "close": true
+}

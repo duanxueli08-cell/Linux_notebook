@@ -1,0 +1,10 @@
+{
+  "promptDelete": false,
+  "strictLineBreaks": true,
+  "showLineNumber": true,
+  "spellcheck": false,
+  "autoPairBrackets": false,
+  "vimMode": false,
+  "attachmentFolderPath": "/",
+  "newFileLocation": "root"
+}
