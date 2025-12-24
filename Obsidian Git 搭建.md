@@ -73,3 +73,24 @@ ssh -T git@github.com
 git push -u origin main
 ```
 
+
+Obsidian 
+安装 Git 插件
+插件配置根据自己需求打开或关闭
+忽略权限指令
+```
+cd /c/Program Files/Obsidian/data/Obsidian Vault
+git config core.fileMode false
+# 检查是否生效,如果返回 false ，说明搞定了!
+git config --get core.fileMode
+```
+清理 Git 索引
+```
+git rm -r --cached . 
+git add . 
+git commit -m .
+```
+在 git 仓库中创建一个文件  .gitignore
+```
+
+```
