@@ -107,24 +107,76 @@ desktop.ini
 ```
 
 
-## 安装 Template  插件
+# 安装 Template  插件
 
-**安装插件**：在“社区插件”搜 `Templater` 安装并启用。
-在你的 Obsidian 仓库里建个文件夹，比如 Templates
-在 Templater 插件设置里，把 `Template folder location` 指向它。
-开启 `Trigger Templater on new file creation`（新建文件时自动触发）。
+🛠️ SRE 生产力工具配置：Templater 自动化笔记指南
 
-- 开启 `Automatic jump to cursor`
-**原理：** 只有开启了这个，Templater 才会去扫描文档里的 `<% tp.file.cursor() %>` 并把光标跳过去。如果不开启，它就把它当成一串普通的文本字符（也就是你第一张图看到的样子）。
-- 开启 `Enable folder templates`
-**效果：** 以后只要在这个文件夹下“新建文件”，**模板会自动弹出填充**，连 `Alt + E` 都省了！这叫“自动化部署”。
+> **文档说明**：本手册用于指导如何在 Windows 环境下配置 Obsidian 的 Templater 插件，实现笔记的“自动化部署”与“全键盘操作”。
 
-- **操作：** 点击 `Add new hotkey for template`，选择你常用的那个“运维笔记模板”。
-- **场景：** 然后去 Obsidian 系统的“快捷键”设置里，给它绑定一个组合键（比如 `Ctrl + Shift + T`）。
-- **效果：** 真正的 SRE 追求全键盘操作。想写笔记了，`Ctrl + N` 新建，`Ctrl + Shift + T` 喷涌模板，直接开写。
+---
+
+## 一、 基础安装与环境初始化 (Infrastructure Setup)
+
+1. **插件下载**：进入 `Settings` -> `Community plugins` -> 搜索 `Templater` -> 安装并启用。
+    
+2. **创建“仓库中心”**：在 Obsidian 根目录新建文件夹 `99_Templates` (建议加数字前缀使其置底，保持目录整洁)。
+    
+3. **路径绑定**：
+    
+    - 进入 `Templater` 插件设置。
+        
+    - 找到 **Template folder location**，将其指向刚才创建的 `99_Templates`。
+        
+
+---
+
+## 二、 核心参数调优 (Configuration Tuning)
+
+为了实现真正的自动化，必须开启以下三个“生产开关”：
+
+|**配置项**|**操作**|**SRE 原理/效果**|
+|---|---|---|
+|**新建自动触发**|开启 `Trigger Templater on new file creation`|监听文件创建事件，发现空文件立即注入代码。|
+|**光标瞬间跳变**|开启 **`Automatic jump to cursor`**|**原理**：启用后，插件会扫描 `<%tp.file.cursor()%>` 占位符。若不开启，光标无法定位，代码会残留为原始文本。|
+|**目录自动化部署**|开启 **`Enable folder templates`**|**效果**：实现“路径即逻辑”。在 `Linux` 文件夹下新建文件自动用 Linux 模板，在 `K8s` 下新建则自动用 K8s 模板。|
+
+---
+
+## 三、 高阶进阶：快捷键与全键盘流 (Automation)
+
+作为运维，能用键盘解决的绝不动鼠标。
+
+1. **模板热键绑定**：
+    
+    - 在 Templater 设置的 `Template hotkeys` 区域，点击 **Add new hotkey for template**。
+        
+    - 选择你的“运维实战笔记模板”。
+        
+2. **系统层关联**：
+    
+    - 前往 Obsidian `Settings` -> `Hotkeys`。
+        
+    - 搜索刚才添加的模板，绑定为 `Ctrl + Shift + T` (或你顺手的组合)。
+        
+    - **操作流**：`Ctrl + N` (新建文件) -> `Ctrl + Shift + T` (喷涌模板) -> 直接打字。
+        
+
+---
+
+## 四、 补充
+
+存算分离：配合图床使用
+
+- **规范**：笔记中凡是涉及实验截图，一律通过 `Ctrl + V` 由 PicGo 自动上传至 GitHub 仓库。
+    
+- **好处**：保持本地 `.md` 文件轻量化，方便 Git 快速同步，避免因图片过多导致的“同步风暴”。
+    
 
 
-## 图床插件
+
+# 图床插件
+
+目的：需要完成 文图分离、存算分离 的架构
 
 #### 第一步：核心组件安装 (The Infrastructure)
 
