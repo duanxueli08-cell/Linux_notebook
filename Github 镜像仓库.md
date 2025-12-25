@@ -53,7 +53,43 @@ GitHub 的镜像并不在代码文件列表里。它是通过 **GitHub Packages*
   ```
 下载 chart 并上传 github （也是虚拟机中完成）
 ```
-helm push mysql-11.0.0 tgz oci://duanxueli08-cell/my-k8s-charts
+# 官网下载 Chart
+helm pull oci://registry-1.docker.io/bitnamicharts/mysql --version 11.0.0
+
+# 解压后修改镜像源
+# tar xf mysql-11.0.0.tgz
+将下面的字段
+  image:
+    registry: docker.io
+    repository: bitnami/os-shell
+    tag: 12-debian-12-r21
+替换为
+  image:
+    registry: ghcr.io
+    repository: duanxueli08-cell/mysql
+    tag: 8.4
+# 打包
+
+
+helm push mysql-11.0.0.tgz oci://duanxueli08-cell/my-k8s-charts
+helm push mysql-11.0.0.tgz oci://ghcr.io/duanxueli08-cell/mysql
+# 下载
 helm pull oci://ghcr.io/duanxueli08-cell/charts/my-k8s-charts
 ```
 
+
+
+
+建设仓库一条龙
+```
+git init
+git config --global user.name "duanxueli"
+git config --global user.email "17777055510@163.com"
+git remote add origin git@github.com:duanxueli08-cell/my-k8s-charts.git
+git branch -M main
+ssh -T git@github.com
+git status
+git add .
+git commit -m .
+git push -u origin main
+```
