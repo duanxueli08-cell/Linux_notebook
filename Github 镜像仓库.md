@@ -53,6 +53,7 @@ GitHub 的镜像并不在代码文件列表里。它是通过 **GitHub Packages*
   ```
 下载 chart 并上传 github （也是虚拟机中完成）
 ```
-helm push mysql-10.2.1.tgz oci://duanxueli08-cell/charts
-helm pull oci://ghcr.io/duanxueli08-cell/charts/mysql
+helm push mysql-11.0.0 tgz oci://duanxueli08-cell/my-k8s-charts
+helm pull oci://ghcr.io/duanxueli08-cell/charts/my-k8s-charts
 ```
+

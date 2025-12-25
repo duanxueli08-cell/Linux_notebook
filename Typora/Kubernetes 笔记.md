@@ -6613,7 +6613,10 @@ helm repo update && helm repo list
 方法一：通过仓库
 
 方法二：通过OCI协议一键安装
-helm install mysql --version 10.3.0 \
+helm install mysql bitnami/mysql --version 10.3.0 \
+--set image.registry=registry.cn-beijing.aliyuncs.com \
+--set image.repository=wangxiaochun/bitnami-mysql \
+--set image.tag=8.0.37-debian-12-r \
 --set auth.rootPassword='P@ssw0rd' \
 --set global.storageClass=sc-nfs \
 --set auth.database=wordpress \
@@ -6622,14 +6625,17 @@ helm install mysql --version 10.3.0 \
 --set architecture=replication \
 --set secondary.replicaCount=1 \
 --set auth.replicationPassword='P@ssw0rd' \
-oci://registry-1.docker.io/bitnamicharts/mysql \
 -n wordpress --create-namespace
 
 MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace wordpress mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)
 kubectl run mysql-client --rm --tty -i --restart='Never' --image  registry.cn-beijing.aliyuncs.com/wangxiaochun/bitnami-mysql:8.0.37-debian-12-r --namespace wordpress --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
 mysql -h mysql-primary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
 mysql -h mysql-secondary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+```
 
-
+```powershell
+回退
+helm uninstall mysql -n wordpress && kubectl  get all -n wordpress && kubectl get ns		# 清理干净之后再删除空间名称
+kubectl  delete ns wordpress && kubectl get ns
 ```
 
