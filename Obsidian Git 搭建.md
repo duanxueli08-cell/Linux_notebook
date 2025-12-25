@@ -62,6 +62,25 @@ ssh -T git@github.com
 git push -u origin main
 ```
 
+### 故障
+因为一些原因导致 SSH 端口不能访问，类似这个情况
+```
+Administrator@Shirley MINGW64 /c/Program Files/Obsidian/data/Obsidian Vault/Typora (main)
+
+$ ssh -T git@github.com
+
+Connection closed by 198.18.0.10 port 22
+```
+解决步骤 (Windows 系统)
+如果没有 Git 工具，需要去C:\Users\你的用户名\.ssh\下面新建一个config文本文件
+让 GitHub 走 443 端口，伪装成 HTTPS 流量 
+```
+vim ~/.ssh/config
+Host github.com 
+	Hostname ssh.github.com 
+	Port 443 
+	User git
+```
 
 
 ## 安装 Git 插件

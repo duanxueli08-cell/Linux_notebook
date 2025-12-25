@@ -6629,5 +6629,7 @@ MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace wordpress mysql -o jsonpath
 kubectl run mysql-client --rm --tty -i --restart='Never' --image  registry.cn-beijing.aliyuncs.com/wangxiaochun/bitnami-mysql:8.0.37-debian-12-r --namespace wordpress --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
 mysql -h mysql-primary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
 mysql -h mysql-secondary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+
+
 ```
 
