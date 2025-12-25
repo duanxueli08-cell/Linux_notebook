@@ -2665,7 +2665,8 @@ kubectl get ds -n kube-system calico-node -o yaml
 
 > - 在 `Deployment` 中，Pod 的名字后面跟着一串随机字符，删了重开名字就变了。但在 `StatefulSet` 中，每个 Pod 都有一个从 0 开始的固定索引。
 > - 定名称： 如果你定义 `replicas: 3`，Pod 永远叫 `web-0`, `web-1`, `web-2`。即便 `web-0` 挂了被重建，它回来还叫 `web-0`。
-> - Headless Service： 配合一个 ClusterIP 为 None 的 Service，K8S 会为每个 Pod 生成一个 DNS 域名： `$(podname).$(service_name).$(namespace).svc.cluster.local` 
+> - Headless Service： 配合一个 ClusterIP 为 None 的 Service；
+> - **K8S 会为每个 Pod 生成一个 DNS 域名： `$(podname).$(service_name).$(namespace).svc.cluster.local`** 
 >   运维意义： 像 Redis 集群或 ZooKeeper，节点之间需要互相通信，必须知道对方的“身份证号（域名）”，不能每次重启都变。
 
 **稳定的持久化存储**
@@ -6611,6 +6612,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update && helm repo list
 
 方法一：通过仓库
+略
 
 方法二：通过OCI协议一键安装
 helm install mysql bitnami/mysql --version 10.3.0 \
@@ -6631,6 +6633,7 @@ MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace wordpress mysql -o jsonpath
 kubectl run mysql-client --rm --tty -i --restart='Never' --image  registry.cn-beijing.aliyuncs.com/wangxiaochun/bitnami-mysql:8.0.37-debian-12-r --namespace wordpress --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash
 mysql -h mysql-primary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
 mysql -h mysql-secondary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSWORD"
+show processlist;
 ```
 
 ```powershell
@@ -6638,4 +6641,104 @@ mysql -h mysql-secondary.wordpress.svc.cluster.local -uroot -p"$MYSQL_ROOT_PASSW
 helm uninstall mysql -n wordpress && kubectl  get all -n wordpress && kubectl get ns		# 清理干净之后再删除空间名称
 kubectl  delete ns wordpress && kubectl get ns
 ```
+
+
+
+### 案例：基于 Helm 部署 Harbor
+
+官方网址：https://goharbor.cn/docs/2.13.0/install-config
+
+官方网站：https://artifacthub.io/packages/helm
+
+推荐将 Harbor 部署在 k8s 集群之外；
+
+- 镜像仓库是运维的“命根子”。如果 K8s 集群炸了，你的恢复工具（镜像）还在这个集群里，那就会陷入“先有鸡还是先有蛋”的死循环。
+
+**先决条件**
+
+- Kubernetes 集群 1.10+
+- Helm 2.8.0+
+- 具体的查看官方文档
+
+**实现流程**
+
+- 使用 helm 将 harbor 部署到 kubernetes 集群
+- 使用 ingress 发布到集群外部
+- 使用 PVC 持久存储
+
+**默认安装**
+
+```powershell
+# 安装前准备，比如：metallb、添加仓库、helm 等部署前准备
+# ingress controller 基于nginx实现
+# SC名称为sc-nfs，并设为默认的SC
+
+kubectl get sc
+# 把 sc-nfs 设为默认存储类
+kubectl patch storageclass sc-nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+# 在 artifacthub 官网搜索
+helm search hub harbor
+# 添加仓库配置
+helm repo add harbor https://helm.goharbor.io
+helm repo list
+# 基于本地添加仓库搜索
+helm search repo harbor
+
+方法一：
+helm install myharbor harbor/harbor \
+  --set expose.ingress.className=nginx \
+  --set expose.tls.enabled=false  # 如果没配证书，建议先关掉，否则会跳404或证书错误
+方法二 （不推荐）
+# 安装
+helm install myharbor harbor/harbor
+# 修改ingressClass
+kubectl edit ingress myharbor-ingress
+spec: #添加下面一行
+  ingressClassName: nginx
+# 查看分配到的 IP
+kubectl get ingress
+
+# 域名解析 core.harbor.domain --> 10.0.0.13
+# 默认值，用户名密码		admin	Harbor12345
+# 浏览器访问默认域名 ： https://core.harbor.domain/
+```
+
+- 使用默认安装，第一个harbor表示repo仓库名，第二个harbor表示chart名；
+- 此方式如果没有配置默认的SC,会因为缺少持久化存储配置导致 pending
+  
+
+```powershell
+回退
+helm uninstall myharbor &&  kubectl get pvc			# 手动将相关的 PVC 删除
+# 如果不是默认的 SC ，但是又没有指定，可以试试这个
+helm upgrade myharbor harbor/harbor \
+  --set persistence.persistentVolumeClaim.registry.storageClass=sc-nfs \
+  --set persistence.persistentVolumeClaim.chartmuseum.storageClass=sc-nfs \
+  --set persistence.persistentVolumeClaim.jobservice.storageClass=sc-nfs \
+  --set persistence.persistentVolumeClaim.database.storageClass=sc-nfs \
+  --set persistence.persistentVolumeClaim.redis.storageClass=sc-nfs
+```
+
+
+
+# 自定义 Chart
+
+
+
+```powershell
+# 示例：下载 harbor 的 chart 文件
+helm pull harbor/harbor
+# 查看压缩包里面的 chart 文件
+tar tf harbor*
+
+helm show chart harbor	=	cat harbor/Chart.yaml
+```
+
+
+
+
+
+
+
+   
 
