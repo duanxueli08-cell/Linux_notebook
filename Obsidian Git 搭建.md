@@ -220,7 +220,7 @@ git remote set-url origin https://github.com/duanxueli08-cell/K8S-.git
     - 勾选 `repo` 权限。**把生成的这一串字符复制下来，它只出现一次！**
         
 ```
-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
+# Token 都在 Bitwarden 软件中保存
 ```
 
 ```
