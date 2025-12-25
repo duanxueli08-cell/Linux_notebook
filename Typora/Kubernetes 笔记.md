@@ -6736,9 +6736,63 @@ tar tf harbor*
 helm show chart harbor	=	cat harbor/Chart.yaml
 ```
 
+隋唐小测试
+
+```powershell
+helm create mychart
+rm -rf mychart/templates/* mychart/charts
+tree mychart
+# 修改 Chart.yaml
+grep -v "#" mychart/Chart.yaml
+apiVersion: v2
+name: myapp
+description: A Helm chart for Kubernetes
+type: application
+version: 1.2.3
+appVersion: "6.6.6"
+
+vim mychart/values.yaml
+NAME: "wangxiaochun"
+USER:
+  AGE: "18"
+  CITY: "beijing"
+
+vim mychart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Release.Name }}-configmap
+    namespace: {{ .Release.Namespace }}-
+data:
+    data1: "{{ .Release.Revision }}" # 获取此次修订的版本号。初次安装时为1，每次升级或回滚都会递增
+    data2: "{{ .Release.Service }}" # 获取渲染当前模板的服务名称。一般都是 Helm
+    data3: "{{ .Release.IsInstall }}" # 如果当前操作是安装，该值为 true
+    data4: "{{ .Release.IsUpgrade }}" # 如果当前操作是升级或回滚，该值为true
+    data5: "{{ .Release.Name }}" # Release 名称
+    data6: "{{ .Release.Namespace }}" # 名称空间
+    data7: "{{ .Values.NAME }}"
+    data8: "{{ .Values.USER.AGE }}"
+    data9: "{{ .Values.USER.CITY }}"
+    data10: "{{ .Chart.Name }}"
+    data11: "{{ .Chart.Version }}"
+    data12: "{{ .Capabilities.APTversions }}"
+    data13: "{{ .Capabilities.APTversions.Has "apps/v1/Deployment" }}"
+    data14: "{{ .Capabilities.kubeversion }}"
+    data15: "{{ .Capabilities.kubeversion.Version }}"
+    data16: "{{ .Capabilities.kubeversion.Major }}"
+    data17: "{{ .Capabilities.kubeversion.Minor }}"
+    data18: "{{ .Template.BasePath }}"
+    data19: "{{ .Template.Name }}"
+    
+# 模拟运行
+helm install myapp ./mychart -n demo --create-namespace --debug --dry-run
 
 
 
 
+```
 
+
+
+![image-20251225212527961](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251225212527961.png)
 
