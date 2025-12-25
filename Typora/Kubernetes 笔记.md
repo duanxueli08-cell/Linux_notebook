@@ -35,6 +35,8 @@
 
 ![image-20251210095515555](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251210095515555.png)
 
+![image-20251225201814124](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251225201814124.png)
+
 #### 基于 Docker 安装
 
 ###### 准备工作
