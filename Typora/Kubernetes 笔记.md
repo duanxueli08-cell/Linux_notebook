@@ -6736,8 +6736,6 @@ helm show chart harbor	=	cat harbor/Chart.yaml
 
 
 
-![image-20251225201308138](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251225201308138.png)
-
 
 
 
