@@ -1,5 +1,8 @@
 [
   "obsidian-git",
   "templater-obsidian",
-  "obsidian-image-auto-upload-plugin"
+  "obsidian-image-auto-upload-plugin",
+  "dataview",
+  "obsidian-excalidraw-plugin",
+  "copilot"
 ]
