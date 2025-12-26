@@ -6837,6 +6837,262 @@ helm install myapp ./mychart -n demo --create-namespace --debug --dry-run
 helm install myapp ./mychart -n demo --create-namespace --debug --dry-run --set USER.AGE=28,NAME=M65
 ```
 
+### 案例：固定配置的 Chart 
+
+- 缺乏灵活性，意义不大！
+
+```powershell
+helm create myapp-chart
+tree myapp-chart
+rm -rf myapp-chart/templates/* myapp-chart/values.yaml myapp-chart/charts/
+tree myapp-chart
+# 生成相关的资源清单文件
+kubectl create deployment myapp --image registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3 --dry-run=client -o yaml > myapp-chart/templates/myapp-deployment.yaml
+kubectl create service loadbalancer myapp --tcp 80:80 --dry-run=client -o yaml > myapp-chart/templates/myapp-service.yaml
+
+tree myapp-chart/
+# 修改清单文件
+vim myapp-chart/templates/myapp-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp
+  name: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+        name: pod-test
+# 修改配置
+vim myapp-chart/Chart.yaml
+apiVersion: v2
+name: myapp-chart
+description: A Helm chart for Kubernetes
+type: application
+version: 0.0.1
+appVersion: "0.1.0
+
+# 检查语法
+helm lint myapp-chart/
+# 打包
+helm package ./myapp-chart
+```
+
+```powershell
+# 部署应用
+# 方法1
+helm install myapp ./myapp-chart/ --create-namespace --namespace demo
+# 方法2
+helm install myapp myapp-chart-0.0.1.tgz --create-namespace --namespace demo
+# 查看结果
+kubectl get all -n demo
+
+# 卸载
+helm uninstall myweb -n demo && helm list -n demo && kubectl get all -n demo
+```
+
+
+
+### 案例：可变配置的 Chart
+
+```powershell
+helm create myweb-chart && tree myweb-chart
+rm -rf myweb-chart/templates/* myweb-chart/charts/ && tree myweb-chart
+# 生成模板文件
+kubectl create deployment myweb --image registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 3 --dry-run=client -o yaml > myweb-chart/templates/myweb-deployment.yaml
+kubectl create service loadbalancer myweb --tcp 80:80 --dry-run=client -o yaml > myweb-chart/templates/myweb-service.yaml
+
+# 修改相关资源的模板文件,添加变量引用
+vim myweb-chart/templates/myweb-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.deployment_name }}
+  # namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.pod_label }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.pod_label }}
+    spec:
+      containers:
+      - image: {{ .Values.deployment.image }}:{{ .Values.deployment.imageTag }}
+        name: {{ .Values.deployment.container_name }}
+        ports:
+        - containerPort: {{ .Values.service.containerport }}
+
+# 修改相关资源的模板文件,添加变量引用
+vim myweb-chart/templates/myweb-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.service_name }}
+  # namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: LoadBalancer
+  ports:
+  - port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.service.targetport }}
+    # nodePort: {{ .Values.service.nodeport }}
+  selector:
+    app: {{ .Values.deployment.pod_label }}
+
+# 创建默认值文件
+vim myweb-chart/values.yaml
+deployment:
+  deployment_name: myweb-deployment
+  replicas: 3
+  pod_label: myweb-pod-label
+  # image: wangxiaochun/pod-test
+  image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test
+  imageTag: v0.1
+  container_name: myweb-container
+service:
+  service_name: myweb-service
+  port: 80
+  targetport: 80
+  containerport: 80
+  # nodeport: 30080
+
+# Chart.yaml 在此处使用默认值
+grep -v "#" myweb-chart/Chart.yaml
+apiVersion: v2
+name: myweb-chart
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+
+tree myweb-chart/
+# 检查语法
+helm lint myweb-chart/
+#打包
+helm package ./myweb-chart && ll -h myweb-chart-0.1.0.tgz
+```
+
+```powershell
+# 安装：使用默认值安装
+# 方法1:
+helm install myweb ./myweb-chart/ --create-namespace --namespace demo
+# 方法2
+helm install myweb myweb-chart-0.1.0.tgz --create-namespace --namespace demo
+
+# 定制安装 （参数较少时使用比较好）
+helm install --set deployment.replicas=1,deployment.imageTag=v0.2 myweb myweb-chart-0.1.0.tgz --create-namespace --namespace demo2
+
+
+```
+
+验证 Chart
+
+```powershell
+helm list -n demo
+kubectl get all -n demo
+# 查看生成的清单文件内容
+helm get manifest -n demo myweb
+# 测试
+curl 10.0.0.13:30080
+```
+
+升级和回滚
+
+```powershell
+# 升级方法1
+helm upgrade myweb ./myweb-chart -n demo --set deployment.image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test --set deployment.imageTag=v0.2
+# 升级方法2
+vim myweb-chart/values.yaml
+imageTag: v0.2
+helm upgrade myweb ./myweb-chart -n demo -f myweb-chart/values.yaml
+
+# 查看版本历史
+helm history -n demo myweb
+# 验证升级成功
+kubectl get pod -n demo
+# 测试
+curl 10.0.0.13:30080
+# 回滚到指定REVESION号，如果不指定版本，默认回滚至上一个版本,而且只能回滚一个版本
+helm rollback -n demo myweb 1
+```
+
+```powershell
+helm package ./myweb-chart/  &&  ll myweb-chart-0.1.0.tgz
+
+helm uninstall -n demo myweb && helm list -n demo && kubectl get all -n demo
+```
+
+上传到 Harbor
+
+```powershell
+# 首先登录 harbor （如果是 http 需要加 --insecure 选项）（二选一）
+helm registry login --insecure harbor.wang.org -u magedu -p Magedu123
+# 如果 http 上传失败，需要下载 harbor 证书导入相关文件中；
+cat harbor.wang.org.crt >> /etc/ssl/certs/ca-certificates.crt
+# 如果 https 使用自签名证书,需要 Helm 客户端信任 Harbor 证书的 CA （二选一）
+cat harbor.wang.org.crt >> /etc/ssl/certs/ca-certificates.crt
+cat ca.crt >> /etc/ssl/certs/ca-certificates.crt
+# 上传 chart 到 harobr
+helm push myweb-chart-0.1.0.tgz oci://harbor.wang.org/helm
+# 在线安装
+helm install myweb -n demo --create-namespace oci://harbor.wang.org/helm/myweb-chart --version 0.1.0
+# 测试
+kubectl get ppod,svc -n demo
+curl 10.0.0.13
+# 测试从 harbor 下载 chart
+helm pull oci://harbor.wang.org/helm/myapp-chart --version 0.1.0 && ll myapp-chart-0.1.0.tgz
+```
+
+```powershell
+# 准备包文件
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo list
+# 下载为tgz文件
+helm pull prometheus-community/prometheus && ls -l prometheus-27.11.0.tgz
+# 上传 chart 到 harobr
+helm push prometheus-27.11.0.tgz oci://harbor.wang.org/helm
+# 测试从 harbor 下载 chart
+helm pull oci://harbor.wang.org/helm/prometheus/prometheus --version 27.11.0 && ls -l prometheus-27.11.0.tgz
+```
+
+
+
+# 安全
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
 
 
 
