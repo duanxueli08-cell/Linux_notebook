@@ -1,5 +1,8 @@
 {
   "bookmarks": false,
   "properties": false,
-  "tab-header": false
+  "tab-header": false,
+  "bases": false,
+  "editor": false,
+  "search": false
 }
