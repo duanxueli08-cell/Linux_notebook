@@ -16,7 +16,8 @@ status: 📝 沉淀中……
 ### 1. 🎯 实验/故障目标
 > **场景描述**：完成系统 AI 管家的目标
 
-官方文档：[快速开始 | 心流开放平台](https://platform.iflow.cn/cli/quickstart)
+官方文档 （强烈推荐看一遍！）：[快速开始 | 心流开放平台](https://platform.iflow.cn/cli/quickstart)
+
 
 ### 2. ⚡ 核心操作步骤
 
