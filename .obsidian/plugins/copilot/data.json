@@ -53,7 +53,7 @@
     {
       "name": "copilot-plus-flash",
       "provider": "copilot-plus",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "plusExclusive": true,
@@ -65,7 +65,7 @@
     {
       "name": "google/gemini-2.5-flash-lite",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "projectEnabled": true,
@@ -76,7 +76,7 @@
     {
       "name": "google/gemini-2.5-flash",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "projectEnabled": true,
@@ -87,7 +87,7 @@
     {
       "name": "google/gemini-2.5-pro",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "projectEnabled": true,
@@ -98,7 +98,7 @@
     {
       "name": "gpt-5",
       "provider": "openai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "capabilities": [
@@ -108,7 +108,7 @@
     {
       "name": "gpt-5-mini",
       "provider": "openai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "capabilities": [
@@ -118,7 +118,7 @@
     {
       "name": "gpt-4.1",
       "provider": "openai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "projectEnabled": true,
@@ -129,7 +129,7 @@
     {
       "name": "gpt-4.1-mini",
       "provider": "openai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": true,
       "projectEnabled": true,
@@ -140,7 +140,7 @@
     {
       "name": "openai/gpt-4.1",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": false,
       "projectEnabled": true,
@@ -151,7 +151,7 @@
     {
       "name": "openai/gpt-4.1-mini",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": false,
       "projectEnabled": true,
@@ -162,7 +162,7 @@
     {
       "name": "grok-4-fast",
       "provider": "xai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": false,
       "projectEnabled": true,
@@ -173,7 +173,7 @@
     {
       "name": "x-ai/grok-4-fast",
       "provider": "openrouterai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "core": false,
       "projectEnabled": true,
@@ -184,7 +184,7 @@
     {
       "name": "claude-sonnet-4-20250514",
       "provider": "anthropic",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "capabilities": [
         "reasoning",
@@ -205,7 +205,7 @@
     {
       "name": "gemini-2.5-flash-lite",
       "provider": "google",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "projectEnabled": true,
       "capabilities": [
@@ -215,7 +215,7 @@
     {
       "name": "gemini-2.5-pro",
       "provider": "google",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "projectEnabled": true,
       "capabilities": [
@@ -225,19 +225,19 @@
     {
       "name": "azure-openai",
       "provider": "azure openai",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true
     },
     {
       "name": "deepseek-chat",
       "provider": "deepseek",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true
     },
     {
       "name": "deepseek-reasoner",
       "provider": "deepseek",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": true,
       "capabilities": [
         "reasoning"
@@ -246,14 +246,14 @@
     {
       "name": "deepseek-ai/DeepSeek-V3",
       "provider": "siliconflow",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": false,
       "baseUrl": "https://api.siliconflow.com/v1"
     },
     {
       "name": "deepseek-ai/DeepSeek-R1",
       "provider": "siliconflow",
-      "enabled": true,
+      "enabled": false,
       "isBuiltIn": false,
       "baseUrl": "https://api.siliconflow.com/v1",
       "capabilities": [
