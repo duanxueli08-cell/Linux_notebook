@@ -20,3 +20,5 @@
 
 > ⚠️ 注意：极少数老旧软件（如某些国产安装包）可能不兼容，但现代开发工具完全没问题。
 
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251228172815990.png)
+![](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251228172815990.png)
