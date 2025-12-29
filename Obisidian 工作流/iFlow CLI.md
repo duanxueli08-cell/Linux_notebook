@@ -24,7 +24,7 @@ status: 📝 沉淀中……
 1. 访问 https://nodejs.org/zh-cn/download 下载最新的 Node.js 安装程序
 - 推荐选择 Windows 安装程序 ，而不是独立文件，不然要花费实践学习相关的环境安装！
 2. 重启终端：CMD(Windows + r 输入cmd) 或 PowerShell
-- 推荐使用 Windows Terminal：为了获得更好的兼容性和使用体验，强烈推荐使用 [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701) 运行 iFlow CLI，可以大幅减少环境兼容性问题。
+- 推荐使用 Windows Terminal：为了获得更好的兼容性和使用体验，强烈推荐使用 [Windows Terminal] 运行 iFlow CLI，可以大幅减少环境兼容性问题。
 ```
 # 将当前用户的执行策略设为 `RemoteSigned`（允许本地脚本运行）：
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
