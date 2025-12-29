@@ -283,6 +283,15 @@ kubectl apply -f rolebinding-wang.yaml
 
 > **最佳实践**：用 `ClusterRole` 定义通用权限模板，用 `RoleBinding` 在各 ns 中引用（降权复用）
 
+```powershell
+# 通过集群角色绑定到不同的名称空间
+kubectl create deploy myapp -n 65 --image registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 --replicas 2
+kubectl create rolebinding -n demo rolebinding-demo-admin --clusterrole cluster-admin --serviceaccount=demo:prometheus
+kubectl create rolebinding -n m65 rolebinding-m65-admin --clusterrole cluster-admin --serviceaccount=demo:prometheus
+```
+
+
+
 ### 案例二：混合绑定
 
 使用 `ClusterRole` + `RoleBinding`（推荐生产方式）
@@ -344,6 +353,20 @@ eof
 kubectl  create ns dev
 kubectl apply -f clusterrole-pods-viewer.yaml
 kubectl apply -f rolebinding-wang-dev.yaml
+```
+
+或者指令式发布
+
+```powershell
+kubectl create clusterrole pods-viewer-cluster \
+  --verb=get,list,watch \
+  --resource=pods,services \
+  --verb=get,list,watch \
+  --resource=deployments.apps
+kubectl create rolebinding wang-pods-reader-in-dev \
+  --namespace=dev \
+  --clusterrole=pods-viewer-cluster \
+  --user=wang
 ```
 
 🆚 对比说明
@@ -563,4 +586,263 @@ kubectl describe clusterrole view
 ```
 
 ---
+
+
+
+## Dashboard
+
+- 下载地址：https://github.com/kubernetes/dashboard
+- 注意:v2.7.0以后版本只支持Helm安装
+
+以下是通过 token 认证登录的方式，还有一个 kubeconfig 认证方式，但是非常繁琐，不推荐！这里就不做相关的笔记了！
+
+```powershell
+# 获取官方的yaml文件,下载并修改配置文件
+VERSION=v2.7.0
+# 通过代理下载
+wget https://mirror.ghproxy.com/https://raw.githubusercontent.com/kubernetes/dashboard/${VERSION}/aio/deploy/recommended.yaml
+# 部署
+mv recommended.yaml recommended_2.7.0.yaml
+kubectl apply -f recommended_2.7.0.yaml
+
+# 创建专用的SA服务账户,注意SA所在名称空间并不决定可以管理的Pod所在名称空间
+kubectl create serviceaccount dashboard-admin -n kube-system
+# 将SA帐号利用集群角色绑定至集群角色cluster-admin
+kubectl create clusterrolebinding dashboard-admin --clusterrole=cluster-admin --serviceaccount=kube-system:dashboard-admin
+```
+
+```powershell
+# 创建SA帐号后不会自动创建secret,需要手动创建secret
+cat > security-dashboard-admin-secret.yaml
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: dashboard-admin-secret
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: "dashboard-admin"
+
+kubectl apply -f security-dashboard-admin-secret.yaml
+# 查看创建的Secret
+kubectl get secret -A | grep dashboard-admin
+# 查看Secret关联的Token 
+kubectl get secrets dashboard-admin-secret -n kube-system -o yaml
+# 需要 base34 转码，得到真正的 token
+echo 你的 token | base64 -d
+# 直接查看真正的 token （不用转码）
+kubectl describe secrets -n kube-system dashboard-admin-secret
+```
+
+```powershell
+# 查看暴露的 IP
+kubectl get -n kubernetes-dashboard all
+浏览器：https://10.0.0.11	————>	输入 token	————>	登录
+
+```
+
+
+
+## Kuboard
+
+官网： https://kuboard.cn/
+
+在线体验
+
+```powershell
+https://demo.kuboard.cn
+用 户： demo
+密 码： demo123
+```
+
+安装方法介绍
+
+- 基于 Docker 安装：官方推荐
+- 基于 Kubernetes 集群中安装
+
+支持Storage Class 持久化安装kuboard
+
+```powershell
+# 环境准备，提前准备一个名称为sc-nfs的storageClass
+kubectl get sc
+# 注意:官方yaml文件有bug,需要修改
+curl -o kuboard-v3.yaml https://addons.kuboard.cn/kuboard/kuboard-v3-storage-class.yaml
+vim kuboard-v3.yaml
+data:
+  #KUBOARD_ENDPOINT: 'http://your-node-ip-address:30080' #注释此行
+  KUBOARD_ENDPOINT: 'http://kuboard.wang.org' #添加此行
+  KUBOARD_AGENT_SERVER_UDP_PORT: '30081'
+  KUBOARD_AGENT_SERVER_TCP_PORT: '30081'
+往下面找，填写一个有效的 StorageClass name 
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+    #storageClassName: please-provide-a-valid-StorageClass-name-here #修改此处
+    storageClassName: sc-nfs # 如果配置了默认的sc，此行可以不添加，上面行注释即可
+继续往下面找
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kuboard-data-pvc
+  namespace: kuboard #注意:官方的bug会导致 pod/kuboard-v3-xxx 处于 pending 状态，需要加此行指定名称空间
+spec:
+  #storageClassName: please-provide-a-valid-StorageClass-name-here # 修改此处
+  storageClassName: sc-nfs # 如果配置了默认的sc，此行可以不添加，上面行注释即可
+```
+
+```powershell
+kubectl apply -f kuboard-v3.yaml
+# 此时就可以通过集群内任意 IP 加端口号在浏览器登录访问了！  10.0.0.101:30000
+
+# 如果想通过ingress暴Kuboard露，可以执行下面操作，注意：需要提前部署ingress-nginx(可选)
+cat > ingress-kuboard.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kuboard
+  namespace: kuboard
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: kuboard.wang.org
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: kuboard-v3
+            port:
+              number: 80
+        pathType: Prefix
+
+kubectl apply -f ingress-kuboard.yaml
+kubectl get ingress -n kuboard
+# 做域名解析
+kuboard.wang.org 10.0.0.11
+
+# 安装后访问 Kuboard
+# 在浏览器中打开链接 http://kuboard.wang.org
+# 输入初始用户名和密码，并登录
+# 用户名： admin
+# 密码： Kuboard123
+方法一：Token
+#  API server 地址：https://10.0.0.101:6443
+# 后面可以根据官方指导生成 token
+方法二：KubeConfig
+# 将集群中的 .kube/config 文件复制到里面，然后修改下面的域名为 IP
+```
+
+
+
+
+
+
+
+# Kubernetes  网络
+
+
+
+
+
+CNI 网络插件的主要功能：
+
+为 pod 分配 ip 地址，管理 IP 地址池和回收
+
+配置网络命名空间；
+
+设置路由和网桥，提供跨界点通信能力；
+
+支持多网络和网络策略 （部分插件）
+
+
+
+
+
+常见 CNI 插件：
+
+flannel：简单易用，基于 overlay 网络；
+
+calico：高性能，支持 BGP 路由和 NetworkPolicy；（主流）
+
+cilium：基于 eBPF，提供 L3-L7 层安全和可观测性；
+
+
+
+k8s 目前常用实现 pod 网络的方案有两类：承载网络 （underlay） 和叠加网络 （overlay）
+
+| 特性              | Underlay                  | Overlay                        |
+| ----------------- | ------------------------- | ------------------------------ |
+| **网络模型**      | 直接使用物理网络          | 虚拟网络叠加在物理网络上       |
+| **Pod IP 可见性** | 对物理网络可见            | 仅在集群内可见                 |
+| **性能**          | 更优（无封装）            | 略低（有封装开销）             |
+| **部署复杂度**    | 高（需网络配合）          | 低（自包含）                   |
+| **跨节点通信**    | 依赖底层路由（如 BGP）    | 自动通过隧道实现               |
+| **典型代表**      | Calico (BGP), AWS VPC CNI | Flannel, Weave, Cilium (VXLAN) |
+
+一、Underlay（承载网络）
+
+核心思想
+
+- 直接利用底层物理网络基础设施（如交换机、路由器）来实现 Pod 之间的通信。
+- Pod 的 IP 地址通常是真实存在于物理网络中的可路由地址，无需封装或隧道。
+
+🔧 典型实现：
+
+- Calico（BGP 模式）
+- 某些云厂商 VPC 原生网络（如 AWS VPC CNI、阿里云 Terway）
+
+✨ 侧重点：
+
+| 维度           | 说明                                                         |
+| -------------- | ------------------------------------------------------------ |
+| **性能**       | 极高，无封装开销，延迟低，吞吐高                             |
+| **网络可见性** | Pod IP 对物理网络可见，便于监控、排障和安全策略部署          |
+| **扩展性**     | 依赖底层网络设备能力（如 BGP 支持），大规模部署需网络团队配合 |
+| **配置复杂度** | 较高，需对物理网络有控制权（如配置 BGP 路由）                |
+
+
+
+二、Overlay（叠加网络）
+
+核心思想：
+
+- 在现有物理网络之上构建一个虚拟网络层，通过封装技术（如 VXLAN、Geneve、IPIP）将 Pod 流量封装在物理网络传输。
+- Pod IP 是虚拟地址，仅在 overlay 网络内有效，物理网络看不到 Pod IP。
+
+🔧 典型实现：
+
+- Flannel（VXLAN / Host-gw 模式）
+- Calico（IPIP 模式）
+- Weave Net
+- Cilium（VXLAN / Geneve）
+
+✨ 侧重点：
+
+| 维度           | 说明                                               |
+| -------------- | -------------------------------------------------- |
+| **性能**       | 有一定封装/解封装开销，但现代 CPU 优化后影响较小   |
+| **部署便捷性** | 高，不依赖底层网络改造，适合任意 IaaS 或裸金属环境 |
+| **跨子网通信** | 天然支持，无需底层网络支持 L3 路由                 |
+| **隔离性**     | 虚拟网络与物理网络解耦，更易实现多租户隔离         |
+
+
+
+容器接入网络的方式：
+
+实现方式有三种：虚拟以太网设备 （veth）、多路复用以及硬件交换；
+
+- MACVLAN：通过 MAC 地址 多路复用物理接口
+- IPVLAN：通过 IP 地址 多路复用物理接口
+
+
+
+```powershell
+# 观察网卡 ( 以 dockers0 网卡为例 )
+ethtool -i docker0
+# 查看网桥信息
+brctl show
+```
+
+
 
