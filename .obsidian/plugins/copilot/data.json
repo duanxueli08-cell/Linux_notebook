@@ -194,13 +194,16 @@
     {
       "name": "gemini-2.5-flash",
       "provider": "google",
-      "enabled": false,
+      "enabled": true,
       "isBuiltIn": true,
       "projectEnabled": true,
       "capabilities": [
         "vision"
       ],
-      "enableCors": false
+      "enableCors": true,
+      "apiKey": "AIzaSyCucF2-ZgZIcD01gvfgg4eP1CC3r0icEZc",
+      "displayName": "Gemini",
+      "baseUrl": "https://generativelanguage.googleapis.com"
     },
     {
       "name": "gemini-2.5-flash-lite",

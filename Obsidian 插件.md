@@ -35,3 +35,15 @@
 2. 在 **Basic** 栏中，将 API Key 粘贴到对应字段，并点击 **Verify**
 
 - 选择预置模型和添加模型
+
+
+总结：
+- 拿模型密钥；
+- 填入密钥；
+- 就这么简单；
+
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251229090711423.png)
+
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251229090753314.png)
+
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251229090816799.png)
