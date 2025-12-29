@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 # 1. 自动定位：无论从哪触发，都强制进入脚本所在的目录
 # 解决你“一闪而逝”找不到路径的问题
