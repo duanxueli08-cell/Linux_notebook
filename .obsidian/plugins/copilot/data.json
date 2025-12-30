@@ -199,11 +199,7 @@
       "projectEnabled": true,
       "capabilities": [
         "vision"
-      ],
-      "enableCors": true,
-      "apiKey": "AIzaSyCucF2-ZgZIcD01gvfgg4eP1CC3r0icEZc",
-      "displayName": "Gemini",
-      "baseUrl": "https://generativelanguage.googleapis.com"
+      ]
     },
     {
       "name": "gemini-2.5-flash-lite",
@@ -250,14 +246,14 @@
       "name": "deepseek-ai/DeepSeek-V3",
       "provider": "siliconflow",
       "enabled": false,
-      "isBuiltIn": false,
+      "isBuiltIn": true,
       "baseUrl": "https://api.siliconflow.com/v1"
     },
     {
       "name": "deepseek-ai/DeepSeek-R1",
       "provider": "siliconflow",
       "enabled": false,
-      "isBuiltIn": false,
+      "isBuiltIn": true,
       "baseUrl": "https://api.siliconflow.com/v1",
       "capabilities": [
         "reasoning"
