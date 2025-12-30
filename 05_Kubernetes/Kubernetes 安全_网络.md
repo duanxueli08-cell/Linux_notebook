@@ -859,7 +859,7 @@ calico
 
 
 
-## 🧱 VXLAN 通信过程
+## VXLAN 通信过程
 
 ```bash
 容器中的应用发送数据 → 
@@ -972,11 +972,484 @@ route -n
 
 
 
-## Calico 
+# 🧱 Calico 
+
+------
+
+## 一、Calico 简介（介绍）
+
+**Calico** 是一个开源的、高性能的容器网络和网络安全解决方案，广泛用于 Kubernetes、OpenShift、Docker 等容器编排平台。它提供以下核心能力：
+
+- **Pod 之间三层（L3）网络通信**：无需 overlay 封装（默认模式），直接使用 BGP 协议实现高效路由。
+- **网络策略（NetworkPolicy）**：支持细粒度的流量控制，实现零信任安全模型。
+- **IP 地址管理（IPAM）**：自动为 Pod 分配 IP，并支持灵活的地址池配置。
+- **多集群/混合云支持**：可跨多个 Kubernetes 集群甚至物理/虚拟机统一组网。
+
+Calico 由 Tigera 公司主导开发，是 CNCF（云原生计算基金会）的毕业项目之一，被大量生产环境采用。
+
+------
+
+## 二、Calico 的工作机制
+
+Calico 的核心设计理念是 **“基于纯三层的网络模型”**，避免传统 overlay（如 VXLAN、GRE）带来的性能损耗和复杂性。其工作机制主要包括以下几个组件：
+
+### 1. **Felix**
+
+- 每个节点上运行的代理（agent）。
+- 负责配置路由表、iptables 规则、ACL（访问控制列表）等。
+- 监听 Calico 控制平面的变化（如新 Pod 创建、策略更新），并实时应用到本地。
+
+### 2. **etcd（或 Kubernetes API）**
+
+- 存储 Calico 的配置数据，如 IP 地址分配、网络策略、节点信息等。
+- 在 Kubernetes 中，Calico 可以直接使用 Kubernetes API 作为数据存储（称为 “KDD 模式”，即 Kubernetes Datastore Driver），无需独立 etcd。
+
+### 3. **BIRD（BGP 守护进程）**
+
+- 实现 BGP（边界网关协议）路由分发。
+- 各节点通过 BGP 互相通告自己所管理的 Pod CIDR，使整个集群形成一个扁平的三层网络。
+- 支持与物理网络设备（如 Top-of-Rack 交换机）建立 BGP 对等体，实现无缝集成。
+
+### 4. **CNI 插件**
+
+- Calico 提供符合 CNI（Container Network Interface）规范的插件。
+- 当 Kubernetes 调度 Pod 时，kubelet 调用 Calico CNI 为容器创建虚拟网卡（veth pair），并配置 IP 和路由。
+
+### 5. **Typha（可选）**
+
+- 用于大规模集群中减轻 API Server 压力。
+- 作为 Felix 与 API Server 之间的代理，聚合和缓存状态变更。
+
+> ✅ **关键特点**：默认使用 **BGP 路由模式**，Pod IP 在整个集群内可达，无需 NAT 或隧道封装，性能接近物理网络。
+
+------
+
+## 三、Calico 的主要网络模型
+
+Calico 支持多种网络部署模式，适应不同规模和网络环境的需求：
+
+### 1. **BGP 模式（默认，推荐）**
+
+- **原理**：每个节点通过 BGP 协议广播自己负责的 Pod CIDR。
+- **优点**：
+  - 无 overlay 封装，低延迟、高吞吐。
+  - 路由清晰，便于排错和监控。
+- **适用场景**：数据中心网络支持 BGP（如使用 Cumulus、Arista、Cisco 等支持 BGP 的交换机）。
+- **子模式**：
+  - **Node-to-Node Mesh**：所有节点两两建立 BGP 对等（适合小集群，<100 节点）。
+  - **Route Reflector（RR）模式**：引入 BGP Route Reflector 集中管理路由，适合大规模集群。
+
+### 2. **IPIP 模式（Overlay）**
+
+- **原理**：当底层网络不支持 BGP 或跨子网通信时，Calico 会将 Pod 流量封装在 IPIP（IP in IP）隧道中传输。
+- **特点**：
+  - 跨子网通信可行。
+  - 性能略低于纯 BGP（因有封装开销）。
+  - 仍保留 Calico 的网络策略能力。
+- **典型场景**：公有云环境（如 AWS、阿里云）中节点分布在不同子网，且无法修改底层路由。
+
+### 3. **VXLAN 模式（Calico v3.17+ 支持）**
+
+- 类似 Flannel 的 VXLAN 模式，但结合了 Calico 的策略引擎。
+- 适用于不能使用 BGP 且希望比 IPIP 更高效（硬件加速支持）的场景。
+
+### 4. **混合模式（Hybrid）**
+
+- 可在同一集群中对部分节点使用 BGP，部分使用 IPIP/VXLAN。
+- 通过配置 `ippool` 的 `natOutgoing` 和 `vxlanMode/ipipMode` 实现灵活调度。
+
+------
+
+## 补充：Calico 与 Flannel 对比（常见疑问）
+
+| 特性     | Calico                | Flannel                        |
+| -------- | --------------------- | ------------------------------ |
+| 网络模型 | L3 BGP / IPIP / VXLAN | 主要 Overlay（VXLAN、Host-gw） |
+| 网络策略 | ✅ 原生支持            | ❌ 需配合其他组件（如 Canal）   |
+| 性能     | 高（BGP 模式无封装）  | 中（VXLAN 有封装开销）         |
+| 复杂度   | 较高（需理解 BGP）    | 简单易用                       |
+| 适用场景 | 生产级、安全要求高    | 快速搭建、测试环境             |
 
 相较于 flannel 来说 ， calico 主要优势在于支持网络策略 network policy
 
-网络机制
+------
+
+## 总结
+
+- **Calico = 高性能网络 + 强大安全策略**。
+- 默认使用 **BGP 三层路由**，避免 overlay 开销。
+- 支持 **IPIP/VXLAN** 以适应复杂网络环境。
+- 是构建 **安全、可扩展、可观测** 的 Kubernetes 网络的首选方案之一。
+
+------
+
+
+
+
+
+------
+
+## 一、Calico 安装配置示例
+
+### 1. 前提条件
+
+- 已部署 Kubernetes 集群（v1.20+ 推荐）
+- 节点间网络互通（特别是 BGP 模式需开放 TCP 179 端口）
+- 推荐关闭防火墙或放行必要端口（如 IPIP 使用协议号 4）
+
+------
+
+### 2. 快速安装（使用官方 YAML）
+
+查看calico版本的k8s 版本的兼容性
+
+```powershell
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
+```
+
+查看安装方法
+
+```powershell
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
+```
+
+由于之前我用的 flannel 插件，所以需要先清理一下环境!
+
+```powershell
+kubectl delete -f kube-flannel.yml
+rm -f /etc/cni/net.d/* && ls /etc/cni/net.d/
+kubectl get pod -n kube-system | grep flannel
+# 确认 flannel 的相关 Pod 被删除，最后重启；否则路由表信息不会刷新！
+ip a
+```
+
+Calico 官方提供了一键部署的 YAML 文件：
+
+```bash
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/calico.yaml -O
+```
+
+> ⚠️ 注意：该 YAML 默认启用 **IPIP 模式**（`ipipMode: Always`），适用于跨子网或公有云环境。
+
+```powershell
+# 可以直接使用原文件，如果修改可以先备份原文件(可选)
+cp calico.yaml calico.yaml.bak
+# 可以直接使用原来的flannel的网络配置，测试环境也可以做下面配置修改CIDR，(可选)
+vim calico.yaml
+# 官网推荐的修改内容(基于kubeadm安装可不做修改,其它安装方式,需要修改，可选)
+# 指定Pod的网段,如果使用当前默认配置，即保留当前注释,Pod的IP将使用安装k8s时的 --pod-network-cidr 选项指定IP网段(可选)
+	- name: CALICO_IPV4POOL_CIDR 	# 删除注释可以覆盖安装k8s时的--pod-network-cidr选项，使用指定Pod网段
+	  value: "192.168.0.0/16" 		# 默认值为 value: "192.168.0.0/16"
+# 开放默认注释的CALICO_IPV4POOL_CIDR变量，此处改为24,生产环境可不用修改，当前为测试环境建议
+# 默认没有下面内容,手动加下面两行,调大单个节点上的Pod所在网段,默认使用/26,即255.255.255.192的子网掩码，每个节点只有62个Pod的地址
+	- name: CALICO_IPV4POOL_BLOCK_SIZE
+	  value: "24"
+```
+
+```powershell
+kubectl apply -f calico.yaml
+```
+
+```powershell
+ethtool -i tunl0
+```
+
+
+
+------
+
+### 3. 自定义配置（以纯 BGP 模式为例）
+
+如果在私有数据中心，希望使用 **高性能 BGP 模式（无 IPIP 封装）**，需要修改 Calico 的 IP Pool 配置。
+
+#### 步骤 1：下载并编辑 YAML
+
+```bash
+wget https://docs.projectcalico.org/manifests/calico.yaml -O calico-bgp.yaml
+```
+
+#### 步骤 2：修改 IP Pool 配置
+
+找到 `kind: IPPool` 的部分，修改如下：
+
+```yaml
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  name: default-ipv4-ippool
+spec:
+  cidr: 192.168.0.0/16        # Pod 使用的 IP 段
+  ipipMode: Never             # 关闭 IPIP（BGP 模式）
+  vxlanMode: Never            # 关闭 VXLAN
+  natOutgoing: true           # 出站流量做 SNAT（访问外网必需）
+  nodeSelector: all()
+```
+
+> ✅ `ipipMode: Never` + `natOutgoing: true` 是典型 BGP 生产配置。
+
+#### 步骤 3：应用配置
+
+```bash
+kubectl apply -f calico-bgp.yaml
+```
+
+------
+
+### 4. 验证安装
+
+```bash
+# 查看 Calico 组件是否 Running
+kubectl get pods -n kube-system | grep calico
+
+# 查看节点 BGP 状态（需安装 calicoctl）
+calicoctl node status
+```
+
+输出示例（BGP 模式）：
+
+```
+IPv4 BGP status
++--------------+-------------------+-------+----------+-------------+
+| PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
++--------------+-------------------+-------+----------+-------------+
+| 10.0.0.2     | node-to-node mesh | up    | 10:23:45 | Established |
+| 10.0.0.3     | node-to-node mesh | up    | 10:23:46 | Established |
++--------------+-------------------+-------+----------+-------------+
+```
+
+> 💡 若未安装 `calicoctl`，可使用以下命令快速部署：
+
+```bash
+kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml
+```
+
+------
+
+## 二、Calico 网络策略（NetworkPolicy）编写
+
+Kubernetes 原生支持 NetworkPolicy，但**只有 Calico、Cilium 等插件真正实现了它**。Calico 的策略引擎非常强大。
+
+### 1. 基本概念
+
+- 默认情况下，**所有 Pod 可互相通信**（“允许所有”）。
+- 一旦为某个 Namespace 或 Pod 应用 NetworkPolicy，**默认变为拒绝所有**，只放行策略中明确允许的流量。
+
+------
+
+### 2. 示例 1：只允许前端访问后端
+
+假设：
+
+- 前端 Pod 标签：`app=frontend`
+- 后端 Pod 标签：`app=backend`，监听 8080 端口
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend          # 策略作用于带此标签的 Pod
+  policyTypes:
+  - Ingress                 # 控制入站流量
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend     # 只允许 frontend 访问
+    ports:
+    - protocol: TCP
+      port: 8080
+```
+
+> ✅ 应用后，只有 `app=frontend` 的 Pod 能访问 `app=backend:8080`，其他全部拒绝。
+
+------
+
+### 3. 示例 2：禁止所有出站（egress）流量，仅允许 DNS 和 HTTP
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: restrict-egress
+  namespace: secure-app
+spec:
+  podSelector:
+    matchLabels:
+      app: secure-pod
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector: {}   # 允许访问任何命名空间的 kube-dns
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0     # 允许访问公网 HTTP/HTTPS
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+```
+
+> 🔒 这是典型的“零信任”策略：最小权限原则。
+
+------
+
+### 4. 高级功能（Calico 特有）
+
+Calico 还支持更强大的策略，如：
+
+- **全局网络策略（GlobalNetworkPolicy）**：跨命名空间生效
+- **基于 CIDR、服务账户、FQDN 的规则**
+- **日志记录（logAccepted/Rejected）**
+
+示例：记录所有被拒绝的流量
+
+```yaml
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: log-all-deny
+spec:
+  order: 2000
+  selector: "all()"
+  types:
+  - Ingress
+  - Egress
+  ingress:
+  - action: Log
+  egress:
+  - action: Log
+```
+
+------
+
+## 三、Calico 常见排错技巧
+
+### 1. Pod 无法获取 IP
+
+- **现象**：Pod 卡在 `ContainerCreating`
+
+- **排查**：
+
+  ```bash
+  kubectl describe pod <pod-name>
+  # 查看是否有 "failed to allocate IP" 错误
+  ```
+
+- **原因**：
+
+  - IP 地址池耗尽（检查 `calicoctl get ippool -o wide`）
+  - CNI 配置缺失（检查 `/etc/cni/net.d/` 是否有 10-calico.conflist）
+
+------
+
+### 2. Pod 之间无法通信
+
+- **步骤 1**：确认是否启用了 NetworkPolicy
+
+  ```bash
+  kubectl get networkpolicy --all-namespaces
+  ```
+
+  如果有策略，先临时删除测试。
+
+- **步骤 2**：检查路由表（在源节点执行）
+
+  ```bash
+  ip route show
+  # 应包含目标 Pod 所在节点的 CIDR，下一跳为对端节点 IP
+  ```
+
+- **步骤 3**：检查 BGP 状态
+
+  ```bash
+  calicoctl node status
+  # 确保所有对等体状态为 "Established"
+  ```
+
+- **步骤 4**：抓包分析
+
+  ```bash
+  # 在源节点抓包（查看是否发出）
+  tcpdump -i any host <目标PodIP>
+  
+  # 在目标节点抓包（查看是否收到）
+  tcpdump -i any host <源PodIP>
+  ```
+
+------
+
+### 3. IPIP 模式下跨节点不通
+
+- **可能原因**：底层网络屏蔽了 **IP 协议号 4（IPIP）**
+
+- **验证**：
+
+  ```bash
+  # 在节点上测试是否能发 IPIP 包
+  ping -I tunl0 <目标节点IP>
+  ```
+
+- **解决**：
+
+  - 公有云：确保安全组允许 **协议 4**（不是 TCP/UDP！）
+  - 或改用 VXLAN 模式（使用 UDP 封装，通常更友好）
+
+------
+
+### 4. Calico 组件 CrashLoopBackOff
+
+- **常见原因**：
+
+  - etcd/Kubernetes API 连接失败
+  - 节点 hostname 不唯一（Calico 要求 hostname 全局唯一）
+  - 内核版本过低（建议 ≥ 4.10）
+
+- **排查命令**：
+
+  ```bash
+  kubectl logs -n kube-system calico-node-xxxxx -c calico-node
+  ```
+
+------
+
+## 总结
+
+| 主题     | 关键点                                                       |
+| -------- | ------------------------------------------------------------ |
+| **安装** | 默认用 `calico.yaml`；BGP 模式需设 `ipipMode: Never`         |
+| **策略** | NetworkPolicy 默认 deny-all；Calico 支持全局策略、日志等高级功能 |
+| **排错** | 从 IP 分配 → 路由 → BGP → iptables → 抓包 逐层排查           |
+
+------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 准备环境
 
