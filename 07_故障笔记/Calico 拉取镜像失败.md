@@ -126,7 +126,7 @@ systemctl show --property=Environment containerd
 ls /etc/systemd/system/containerd.service.d/
 
 # 手动拉取镜像（验证 CRI）
-crictl pull <image>
+crictl pull quay.io/calico/cni:v3.31.3
 
 # 清理卡住的 Pod
 kubectl delete pod -n <namespace> <pod-name>
