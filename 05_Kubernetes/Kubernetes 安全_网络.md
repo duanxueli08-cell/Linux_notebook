@@ -1201,7 +1201,7 @@ curl https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/ca
 
 ```powershell
 # 可以直接使用原文件，如果修改可以先备份原文件(可选)
-cp calico.yaml calico.yaml.bak
+cp calico.yaml file/calico.yaml.bak
 # 可以直接使用原来的flannel的网络配置，测试环境也可以做下面配置修改CIDR，(可选)
 vim calico.yaml
 # 官网推荐的修改内容(基于kubeadm安装可不做修改,其它安装方式,需要修改，可选)
