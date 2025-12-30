@@ -1,5 +1,7 @@
 
 ### JSON 文件
+
+	添加 Git 到 Windows terminal
 ---
 
 ```powershell
@@ -414,3 +416,6 @@ if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
     fastfetch -c "C:/Users/Administrator/.config/fastfetch/config.jsonc"
 }
 ```
+
+
+
