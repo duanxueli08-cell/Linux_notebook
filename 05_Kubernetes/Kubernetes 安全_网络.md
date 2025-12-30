@@ -1060,7 +1060,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ------
 
-## 补充：Calico 与 Flannel 对比
+### 补充：Calico 与 Flannel 对比
 
 | 特性     | Calico                | Flannel                        |
 | -------- | --------------------- | ------------------------------ |
@@ -1074,7 +1074,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ------
 
-## 总结
+### 总结
 
 - **Calico = 高性能网络 + 强大安全策略**。
 - 默认使用 **BGP 三层路由**，避免 overlay 开销。
@@ -1091,7 +1091,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ---
 
-## 一、主流网络模式分类
+## 四、主流网络模式分类
 
 ### 1. **Overlay 模式（覆盖网络）** ← **最主流**
 - **原理**：在底层物理网络（Underlay）之上构建一个虚拟网络层，通过“隧道封装”（如 VXLAN、IPIP）将 Pod 流量封装后跨节点传输。
@@ -1133,7 +1133,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ---
 
-## 二、跨节点通信的主流通用模式总结
+### 跨节点通信的主流通用模式
 
 | 模式                    | 技术实现               | 是否主流   | 性能 | 部署复杂度 | 适用环境                     |
 | ----------------------- | ---------------------- | ---------- | ---- | ---------- | ---------------------------- |
@@ -1149,7 +1149,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ---
 
-## 结论
+### 结论
 
 > **现网 K8s 集群的主流跨节点通信模式是 Overlay 网络（尤其是 VXLAN 封装），以 Flannel 和 Calico 为代表；而在高性能或可控网络环境中，Calico 的 BGP 模式（Underlay）正成为生产首选。**
 
@@ -1157,9 +1157,9 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ------
 
-## 一、Calico 安装配置示例
+## 五、Calico 安装配置示例
 
-### 1. 前提条件
+### 前提条件
 
 - 已部署 Kubernetes 集群（v1.20+ 推荐）
 - 节点间网络互通（特别是 BGP 模式需开放 TCP 179 端口）
@@ -1167,7 +1167,7 @@ Calico 支持多种网络部署模式，适应不同规模和网络环境的需�
 
 ------
 
-### 2. 快速安装（使用官方 YAML）
+### 安装（使用官方 YAML）
 
 查看calico版本的k8s 版本的兼容性
 
@@ -1224,11 +1224,160 @@ ethtool -i tunl0
 tcpdump -i echo0 -nn host 192.168.144.20
 ```
 
+---
+
+### Calicoctl 工具管理
+
+**calicoctl 和 calico 版本必须要一致**
+
+官方文档指导：[Install calicoctl | Calico Documentation](https://docs.tigera.io/calico/latest/operations/calicoctl/install)
+
+在所有节点上安装 calicoctl
+
+```powershell
+# 采用单主机命令的方式
+curl -L https://github.com/projectcalico/calico/releases/download/v3.31.3/calicoctl-linux-amd64 -o calicoctl
+ll -h calicoctl
+ldd calicoctl
+mv calicoctl /usr/local/bin/calicoctl
+chmod +x /usr/local/bin/calicoctl && ll /usr/local/bin/calicoctl
+calicoctl version
+```
+
+```powershell
+# 将 calicoctl 添加到 kubectl 中的子命令
+ln -s /usr/local/bin/calicoctl /usr/local/bin/kubectl-calico
+```
+
+```powershell
+calicoctl get node
+
+calicoctl node status
+
+calicoctl get node -o wide
+
+calicoctl get node node1.wang.org -o yaml
+
+calicoctl get ipPool
+
+calicoctl ipam show
+
+calicoctl ipam show --show-configuration
+```
+
+```powershell
+# 通过查看路由表可以看出网络结构成网状，网络开销很大
+root@master1:~# calicoctl get node
+NAME
+master1
+node1
+node2
+node3
+
+root@master1:~# calicoctl ipam show
++----------+----------------+-----------+------------+--------------+
+| GROUPING |      CIDR      | IPS TOTAL | IPS IN USE |   IPS FREE   |
++----------+----------------+-----------+------------+--------------+
+| IP Pool  | 192.168.0.0/16 |     65536 | 14 (0%)    | 65522 (100%) |
++----------+----------------+-----------+------------+--------------+
+root@master1:~# calicoctl node status
+Calico process is running.
+
+IPv4 BGP status
++--------------+-------------------+-------+----------+-------------+
+| PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
++--------------+-------------------+-------+----------+-------------+
+| 10.0.0.104   | node-to-node mesh | up    | 11:52:35 | Established |
+| 10.0.0.105   | node-to-node mesh | up    | 11:52:37 | Established |
+| 10.0.0.106   | node-to-node mesh | up    | 11:52:40 | Established |
++--------------+-------------------+-------+----------+-------------+
+
+IPv6 BGP status
+No IPv6 peers found.
+
+root@master1:~#
+```
+
+接下来就是添加网络反射器
+
+---
+
+### BGP reflecter
+
+- 一个集群中，至少需要一个反射器角色
+- 只需要维护 n * m 个路由信息,n为节点数,m为反射器数量
+- 生产中基于高可用性,需要对反射器角色做冗余
+- 如果是一个多主节点的集群，可以将集群的master节点作为bgp的reflecter角色，从而实现反射器的冗余。
+- 集群规模小做不做反射器都行，点对点连接无所谓；集群规模大必须做相关的优化：反射器以及 typha 
+
+```powershell
+# 选择一个节点上创建反射器角色并指定节点标签
+calicoctl get node master1 --export -o yaml > calico-reflector-master.yaml
+vim calico-reflector-master.yaml
+apiVersion: projectcalico.org/v3
+kind: Node
+metadata:
+  labels:
+    route-reflector: true 				# 添加标签，和后面配置要一致
+  name: master1
+spec:
+  bgp:
+    ipv4Address: 10.0.0.101/16 			# 反射器角色节点的ip地址，默认值不做修改
+    routeReflectorClusterID: 1.1.1.1 	# 加一行，指定ID，可以是唯一的任意字符串，可选
+  ipv4IPIPTunnelAddr: 10.244.0.1 		# 默认值不做修改
+  
+kubectl calico apply -f calico-reflector-master.yaml
+```
+
+```powershell
+# 创建清单文件，定义谁作为反射器
+cat > calico-reflector-bgppeer.yaml <<'eof'
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: bgppeer-demo
+spec:
+  nodeSelector: all() 					# 节点选择器指定所有节点都要配置
+  peerSelector: route-reflector=="true" 	# 定义使用前面匹配的标签选择器，定义配置应用到目标节点
+eof
+
+kubectl calico apply -f calico-reflector-bgppeer.yaml
+calicoctl get bgppeer
+calicoctl node status
+```
+
+```powershell
+# 创建新的清单文件，关闭其它节点的默认的网格mesh
+cat > calico-reflector-defaultconfig.yaml <<'eof'
+apiVersion: projectcalico.org/v3
+kind: BGPConfiguration
+metadata:
+  name: default
+spec:
+  logSeverityScreen: Info
+  nodeToNodeMeshEnabled: false 		# 默认为true,表示启用节点间的iBGP全网格（full mesh）模式,false关闭full-mesh
+  asNumber: 63400 					# 默认的AS为 64512，此项可选
+eof
+
+calicoctl apply -f calico-reflector-defaultconfig.yaml
+calicoctl  node status
+```
+
+反射器到这里就结束了，但是反射器这么重要的配置，制作一个吗？当然不是！
+
+```powershell
+# 配置在上面都已经做了，第二个反射器只需要贴个标签就可以了！（这里我就用 node1 节点做反射器承载）
+kubectl label node note1 route-reflector='true'
+# 不出意外，可以看到与其它节点连接的路由表
+calicoctl  node status
+# 在非反射器的节点只能看到与反射器节点的连接路由表
+```
+
 
 
 ------
 
-###  3. 自定义配置（以纯 BGP 模式为例）
+###  自定义配置（以纯 BGP 模式为例）
 
 如果在私有数据中心，希望使用 **高性能 BGP 模式（无 IPIP 封装）**，需要修改 Calico 的 IP Pool 配置。
 
@@ -1295,119 +1444,271 @@ kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml
 
 ------
 
-## 二、Calico 网络策略（NetworkPolicy）编写
+## 六、Calico 网络策略
 
 Kubernetes 原生支持 NetworkPolicy，但**只有 Calico、Cilium 等插件真正实现了它**。Calico 的策略引擎非常强大。
 
 ### 1. 基本概念
 
-- 默认情况下，**所有 Pod 可互相通信**（“允许所有”）。
-- 一旦为某个 Namespace 或 Pod 应用 NetworkPolicy，**默认变为拒绝所有**，只放行策略中明确允许的流量。
+在kubernetes的策略体系中，最主要有四个方面
 
-------
+- 资源的使用限制 - limitrange
+- 资源的应用配额 - resource quota
+- 资源的安全控制 - podsecritypolicy
+- 资源的网络策略 - network policy，主要来管控资源的通信流量
 
-### 2. 示例 1：只允许前端访问后端
+Network Policy 相关术语
 
-假设：
+- Ingress: 进入Pod的流量策略，控制从哪里来
+- Egress: 定义出Pod的流量策略，控制到哪儿去
+- Pod组：定义策略将在哪些 Pod 上生效
+- Selector：选择Pod对象的一种机制：基于命名空间选择pod、基于网段来选择pod、基于Pod标签来选择pod
 
-- 前端 Pod 标签：`app=frontend`
-- 后端 Pod 标签：`app=backend`，监听 8080 端口
 
-```yaml
+
+```powershell
+# 准备环境
+cat > calico-deployment-myapp.yaml <<'eof'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: develop
+  labels:
+    kubernetes.io/metadata.name: develop 	# 后续需要使用此注释
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp
+  name: myapp
+  namespace: develop
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+    template:
+      metadata:
+        labels:
+          app: myapp
+      spec:
+        containers:
+      - image: registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+        name: pod-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: myapp
+  name: myapp
+  namespace: develop
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: myapp
+  type: ClusterIP
+eof
+```
+
+```powershell
+kubectl apply -f calico-deployment-myapp.yaml
+
+kubectl get svc -n develop
+kubectl get pod -o wide -n develop
+
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/sh
+curl myapp.develop
+# 结果显示：可以正常的访问
+```
+
+#### 设置默认的拒绝 Pod 策略
+
+实现所有的pod都无法正常的访问
+
+```powershell
+cat > calico-networkpolicy-denyall.yaml <<'eof'
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-frontend-to-backend
-  namespace: default
+  name: deny-all-ingress
+  namespace: develop
 spec:
-  podSelector:
-    matchLabels:
-      app: backend          # 策略作用于带此标签的 Pod
-  policyTypes:
-  - Ingress                 # 控制入站流量
+  podSelector: {} #podSelector 值为空，表示当前命名空间中所有的pod
+  policyTypes: ["Ingress", "Egress"] # policyType 中指明了 Ingress 和 Egress。但是没有定义任何ingress和egress字段，默认表示不允许所有pod进出的流量通过
+eof
+
+# 应用资源配置文件
+kubectl apply -f calico-networkpolicy-denyall.yaml
+
+kubectl get networkpolicies -n develop
+kubectl describe networkpolicies -n develop
+
+# 查看效果
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/bash
+curl myapp.develop
+curl 10.244.5.5
+# 结果显示：所有的流量都被拒绝了
+
+# 清除环境
+kubectl delete -f calico-networkpolicy-denyall.yaml
+```
+
+#### 设置默认的允许 Pod 策略
+
+定制所有的pod都正常的访问
+
+```powershell
+cat calico-networkpolicy-allowall.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-ingress # 如果和其它的NetworkPolicy同名,将覆盖
+  namespace: develop
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+  egress:
+  - {}
+  ingress:
+  - {}
+  # 配置解析：分别指定了egress和ingress，但没有做配置，默认表示所有的pod全部允许请求
+eof
+
+# 应用资源配置文件
+kubectl apply -f calico-networkpolicy-allowall.yaml
+
+kubectl describe networkpolicies allow-all-ingress -n develop
+
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/bash
+curl myapp.develop
+curl 10.244.5.5
+# 结果显示：所有的pod都可以正常访问了
+
+# 删除
+kubectl delete -f calico-networkpolicy-allowall.yaml
+```
+
+
+
+#### 仅允许当前命名空间内Pod间所有流量允许访问
+
+仅允许该命名空间内部的 Pod 互相通信，禁止一切外部进出的流量。
+
+```powershell
+cat > calico-networkpolicy-allow-namespace.yaml <<'eof'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-namespace-ingress
+  namespace: develop
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+  egress:
+  - to:
+    - podSelector: {} #表示当前命名空间所有Pod允许出栈访问本名称空间的所有Pod
   ingress:
   - from:
-    - podSelector:
-        matchLabels:
-          app: frontend     # 只允许 frontend 访问
-    ports:
-    - protocol: TCP
-      port: 8080
+    - podSelector: {} 
+eof
 ```
 
-> ✅ 应用后，只有 `app=frontend` 的 Pod 能访问 `app=backend:8080`，其他全部拒绝。
+> - **`namespace: develop`**: 此策略仅对名为 `develop` 的命名空间生效。
+> - **`podSelector: {}`**: 空的选择器表示选中该命名空间下的 **所有 Pod**。
+> - **`policyTypes: ["Ingress", "Egress"]`**:
+>   - 同时开启了**入站 (Ingress)** 和 **出站 (Egress)** 的限制。
+>   - 在 Kubernetes 中，一旦定义了这些类型，默认会开启“拒绝所有”模式
 
-------
+```powershell
+kubectl apply -f calico-networkpolicy-allow-namespace.yaml
 
-### 3. 示例 2：禁止所有出站（egress）流量，仅允许 DNS 和 HTTP
+# 不同 namespace 的 pod 访问不成功
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/bash
+curl 10.244.5.5
+# 同一个 namespace 的 pod 访问测试
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --/bin/bash
+curl 10.244.5.5
+curl myapp
+# 结果显示：只有同一名称空间的资源可以正常访问，而跨名称空间的资源是无法被访问
 
-```yaml
+# 删除资源配置文件
+kubectl delete -f calico-networkpolicy-allow-namespace.yaml
+```
+
+
+
+#### 限制Pod入栈访问的端口和来源网段策略
+
+```powershell
+# 提前准备三个测试的 pod
+kubectl run pod-client1 --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop
+kubectl run pod-client2 --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1
+
+kubectl get pod -n develop -o wide --show-labels | egrep 'NAME|client'
+kubectl get pod -o wide --show-labels | egrep 'NAME|client'
+```
+
+限制只有从指定网段和Label的Pod才能访问名称空间的Pod
+
+```powershell
+cat > calico-networkpolicy-deny-pod.yaml <<'eof'
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: restrict-egress
-  namespace: secure-app
+  name: deny-pod-ingress
+  namespace: develop
 spec:
-  podSelector:
-    matchLabels:
-      app: secure-pod
-  policyTypes:
-  - Egress
+  podSelector: {} # 作用于 develop 命名空间下所有 Pod
+  policyTypes: ["Ingress", "Egress"]
   egress:
-  - to:
-    - namespaceSelector: {}   # 允许访问任何命名空间的 kube-dns
-      podSelector:
-        matchLabels:
-          k8s-app: kube-dns
-    ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0     # 允许访问公网 HTTP/HTTPS
-    ports:
-    - protocol: TCP
-      port: 80
-    - protocol: TCP
-      port: 443
-```
-
-> 🔒 这是典型的“零信任”策略：最小权限原则。
-
-------
-
-### 4. 高级功能（Calico 特有）
-
-Calico 还支持更强大的策略，如：
-
-- **全局网络策略（GlobalNetworkPolicy）**：跨命名空间生效
-- **基于 CIDR、服务账户、FQDN 的规则**
-- **日志记录（logAccepted/Rejected）**
-
-示例：记录所有被拒绝的流量
-
-```yaml
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
-metadata:
-  name: log-all-deny
-spec:
-  order: 2000
-  selector: "all()"
-  types:
-  - Ingress
-  - Egress
+    - to:
+        - podSelector: {} # 允许同命名空间出站
   ingress:
-  - action: Log
-  egress:
-  - action: Log
+    - from:
+        - ipBlock:
+            cidr: 10.244.0.0/16 # 白名单：允许此网段的 Pod 入站访问
+            except:
+              - 10.244.3.6/32  # 排除：禁止该特定 Pod IP 访问
+      ports:
+        - protocol: TCP
+          port: 80             # 仅允许访问目标 Pod 的 80 端口（HTTP）
+eof
 ```
+
+```powershell
+kubectl apply -f calico-networkpolicy-deny-pod.yaml
+
+kubectl get svc -n develop
+
+# 从 pod-client1 对应 10.244.3.6 的 Pod 无法访问其它 Pod , 但此 pod 可以被其它 Pod 访问
+kubectl run pod-client1 --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --/bin/sh
+hostname -i
+curl 10.244.5.5
+
+# 同一个NS的其它pod都可以访问ip,但域名无法访问
+kubectl run pod-client2 --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -n develop -it --rm --command --/bin/sh
+hostname -i
+curl 10.244.5.5
+curl myapp
+
+# 不同 NS 也可以访问IP和域名
+kubectl run pod-client --image=registry.cn-beijing.aliyuncs.com/wangxiaochun/pod-test:v0.1 -it --rm --command -- /bin/sh
+hostname -i
+curl 10.244.5.5
+curl myapp
+```
+
+
 
 ------
 
-## 三、Calico 常见排错技巧
+## 七、Calico 常见排错技巧
 
 ### 1. Pod 无法获取 IP
 
@@ -1481,7 +1782,9 @@ spec:
 
 ------
 
-### 4. Calico 组件 CrashLoopBackOff
+### 4. Calico 组件 
+
+CrashLoopBackOff
 
 - **常见原因**：
 
@@ -1497,7 +1800,7 @@ spec:
 
 ------
 
-## 总结
+#### 总结
 
 | 主题     | 关键点                                                       |
 | -------- | ------------------------------------------------------------ |
@@ -1515,22 +1818,7 @@ spec:
 
 
 
-
-
-
-
-
-
-准备环境
-
-```powershell
-kubectl delete -f kube-flannel.yaml
-rm -rf /etc/cni/net.d/10-flannel.conflist
-```
-
-
-
-## 网络指令
+#### 网络指令
 
 ```powershell
 # 显示名为 docker0 的网络接口的驱动程序和固件（firmware）相关信息。

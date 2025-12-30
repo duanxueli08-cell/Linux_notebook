@@ -277,7 +277,8 @@ https://www.youtube.com/watch?v=z3NpVq-y6jU
 https://www.nerdfonts.com/font-downloads
 ```
 
-通过 winget 下载
+通过 winget 下载 
+- 这个工具我是之前在微软官方网站下载的，这里就不多做赘述了！
 ```powershell
 winget install fastfetch
 ```
