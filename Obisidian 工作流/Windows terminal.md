@@ -261,17 +261,29 @@
 
 ```
 
-### 网页地址
 
+### 操作步骤
+
+网页地址
 ```powershell
 https://github.com/fastfetch-cli/fastfetch
 
 https://github.com/SleepyCatHey/Ultimate-Win11-Setup
+
+https://www.youtube.com/watch?v=z3NpVq-y6jU
+
+https://www.nerdfonts.com/font-downloads
 ```
 
+通过 winget 下载
 ```powershell
 winget install fastfetch
 ```
+
+开始之前需要安装 JetBrains Mono Nerd 字体；网址已经放在上面了！
+- 右键安装 JetBrainsMonoNerdFont-Regular.ttf
+- 安装完成一定要看该字体的实际名称哦！不然后面难搞……
+- 为 WT 设置该字体；
 
 
 - 进入你的用户文件夹：C 盘 —— 用户 —— 你的用户名 
