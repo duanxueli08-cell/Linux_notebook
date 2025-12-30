@@ -1,5 +1,5 @@
 
-JSON 文件
+### JSON 文件
 ---
 
 ```powershell
@@ -70,7 +70,8 @@ JSON 文件
 ```
 
 
-JSON 文件_美化
+### JSON 文件_美化
+---
 ```powershell
 {
     "$help": "https://aka.ms/terminal-documentation",
@@ -172,6 +173,12 @@ JSON 文件_美化
                 "hidden": false,
                 "name": "Azure Cloud Shell",
                 "source": "Windows.Terminal.Azure"
+            },
+            {
+                "guid": "{b453ae62-4e3d-5e58-b989-0a999ec441b8}",
+                "hidden": false,
+                "icon": "C:\\Program Files\\Git\\mingw64\\share\\git\\git-for-windows.ico",
+                "startingDirectory": "%USERPROFILE%"
             }
         ]
     },
@@ -252,4 +259,146 @@ JSON 文件_美化
     "useAcrylicInTabRow": true
 }
 
+```
+
+### 网页地址
+
+```powershell
+https://github.com/fastfetch-cli/fastfetch
+
+https://github.com/SleepyCatHey/Ultimate-Win11-Setup
+```
+
+```powershell
+winget install fastfetch
+```
+
+
+- 进入你的用户文件夹：C 盘 —— 用户 —— 你的用户名 
+- 该路径下有一个 .config 文件夹，没有就创建它！
+	- 在该文件夹中创建一个文件夹：fastfetch
+	- 将下面两个文件放在这个文件夹中；
+	- 编辑 config.jsonc 文件将 C:/Users/Administrator 更改为自己的用户名
+- 进入 C:\Users\Administrator\Documents\WindowsPowerShell 文件夹
+- 打开 profile.ps1文件，将下面的 Microsoft.PowerShell_profile.ps1 文件拷贝进去；
+	- 同样的依照上面的步骤更改为自己的用户名；
+
+
+### config.jsonc 文件
+---
+```powershell
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "file",
+    "source": "C:/Users/%USERPROFILE%/.config/fastfetch/ascii.txt",
+    "color": {
+      "1": "#F5E0DC",
+      "2": "#F2CDCD",
+      "3": "#F5C2E7",
+      "4": "#FAB387",
+      "5": "#F9E2AF",
+      "6": "#A6E3A1",
+      "7": "#94E2D5",
+      "8": "#89DCEB",
+      "9": "#74C7EC"
+    },
+    "padding": {
+      "top": 1,
+      "right": 3
+    }
+  },
+  "display": {
+    "separator": " "
+  },
+  "modules": [
+    "break",
+    {
+      "type": "title",
+      "color": {
+        "user": "#F5C2E7",
+        "at": "#CDD6F4",
+        "host": "#89DCEB"
+      }
+    },
+    "break",
+    {
+      "type": "os",
+      "key": "",
+      "keyColor": "#89DCEB"
+    },
+    {
+      "type": "cpu",
+      "key": "",
+      "keyColor": "#F5C2E7"
+    },
+    {
+      "type": "board",
+      "key": "󰚗",
+      "keyColor": "#FAB387"
+    },
+    {
+      "type": "memory",
+      "key": "",
+      "keyColor": "#A6E3A1",
+      "format": "{used} / {total} ({percentage})"
+    },
+    {
+      "type": "disk",
+      "key": "",
+      "keyColor": "#94E2D5"
+    },
+    "break",
+    {
+      "type": "colors",
+      "symbol": "circle"
+    }
+  ]
+}
+```
+
+### ascii.txt 文件
+```powershell
+$1⠀⠀⠀⠀⣀⡀
+$1⠀⠀⠀⠀⣿⠙⣦⠀⠀⠀⠀⠀⠀⣀⣤⡶⠛⠁
+$2⠀⠀⠀⠀⢻⠀⠈⠳⠀⠀⣀⣴⡾⠛⠁⣠⠂⢠⠇
+$2⠀⠀⠀⠀⠈⢀⣀⠤⢤⡶⠟⠁⢀⣴⣟⠀⠀⣾
+$3⠀⠀⠀⠠⠞⠉⢁⠀⠉⠀⢀⣠⣾⣿⣏⠀⢠⡇
+$3⠀⠀⡰⠋⠀⢰⠃⠀⠀⠉⠛⠿⠿⠏⠁⠀⣸⠁
+$4⠀⠀⣄⠀⠀⠏⣤⣤⣀⡀⠀⠀⠀⠀⠀⠾⢯⣀
+$4⠀⠀⣻⠃⠀⣰⡿⠛⠁⠀⠀⠀⢤⣀⡀⠀⠺⣿⡟⠛⠁
+$5⠀⡠⠋⡤⠠⠋⠀⠀⢀⠐⠁⠀⠈⣙⢯⡃⠀⢈⡻⣦
+$5⢰⣷⠇⠀⠀⠀⢀⡠⠃⠀⠀⠀⠀⠈⠻⢯⡄⠀⢻⣿⣷
+$6⠀⠉⠲⣶⣶⢾⣉⣐⡚⠋⠀⠀⠀⠀⠀⠘⠀⠀⡎⣿⣿⡇
+$6⠀⠀⠀⠀⠀⣸⣿⣿⣿⣷⡄⠀⠀⢠⣿⣴⠀⠀⣿⣿⣿⣧
+$7⠀⠀⠀⢀⣴⣿⣿⣿⣿⣿⠇⠀⢠⠟⣿⠏⢀⣾⠟⢸⣿⡇
+$7⠀⠀⢠⣿⣿⣿⣿⠟⠘⠁⢠⠜⢉⣐⡥⠞⠋⢁⣴⣿⣿⠃
+$8⠀⠀⣾⢻⣿⣿⠃⠀⠀⡀⢀⡄⠁⠀⠀⢠⡾ᵇʸ ᵗⁿᵏᵃ⠁
+$8⠀⠀⠃⢸⣿⡇⠀⢠⣾⡇⢸⡇⠀⠀⠀⡞
+$9⠀⠀⠀⠈⢿⡇⡰⠋⠈⠙⠂⠙⠢
+$9⠀⠀⠀⠀⠈⢧
+```
+
+
+```powershell
+$profile
+
+New-Item -Path $profile.CurrentUserAllHosts -Type File -Force
+```
+### Microsoft.PowerShell_profile.ps1 文件
+```powershell
+# Minimal profile: UTF‑8 + Oh My Posh (if installed) + Fastfetch with explicit config path
+try {
+    [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    chcp 65001 > $null
+} catch {}
+
+Clear-Host
+
+# Force Fastfetch to use YOUR config every time (bypass path confusion)
+if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
+    fastfetch -c "C:/Users/Administrator/.config/fastfetch/config.jsonc"
+}
 ```
