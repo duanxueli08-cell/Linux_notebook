@@ -6,5 +6,6 @@
   "autoPairBrackets": false,
   "vimMode": false,
   "attachmentFolderPath": "/",
-  "newFileLocation": "root"
+  "newFileLocation": "root",
+  "autoConvertHtml": false
 }
