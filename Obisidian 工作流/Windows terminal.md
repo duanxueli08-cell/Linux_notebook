@@ -679,8 +679,16 @@ wsl --install
 设置 WSL 2 为默认版本
 默认安装 Ubuntu 发行版（来自 Microsoft Store）
 
-重启后，系统会自动启动 Ubuntu 并提示你：
+重启后，会弹出一个终端界面自动下载安装 Ubuntu 系统
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260103143906638.png)
+
+
+系统会自动启动 Ubuntu 并提示你：
 创建一个 Linux 用户名（可以和 Windows 用户名不同）
+```
+administrator
+123123
+```
 设置 密码（输入时不会显示字符，正常输入后回车即可）
 ✅ 安装完成！之后你可以在开始菜单中找到 “Ubuntu” 或通过 wsl 命令进入 Linux 环境。
 
