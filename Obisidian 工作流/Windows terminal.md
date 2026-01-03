@@ -661,4 +661,40 @@ if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
 ```
 
 
+### WSL
+- WSL（Windows Subsystem for Linux，Windows 子系统 for Linux）;
+- 运行 Linux 命令行工具
+- 与 Windows 文件系统无缝集成
+- WSL 2 使用轻量级虚拟机技术，但性能接近原生 Linux，尤其在 I/O 和系统调用方面大幅优化。
+- 无需额外配置 X Server。
 
+
+```powershell
+wsl --install
+```
+
+安装程序会自动：
+启用“虚拟机平台”和“WSL”可选功能
+下载并安装 WSL 2 Linux 内核
+设置 WSL 2 为默认版本
+默认安装 Ubuntu 发行版（来自 Microsoft Store）
+
+重启后，系统会自动启动 Ubuntu 并提示你：
+创建一个 Linux 用户名（可以和 Windows 用户名不同）
+设置 密码（输入时不会显示字符，正常输入后回车即可）
+✅ 安装完成！之后你可以在开始菜单中找到 “Ubuntu” 或通过 wsl 命令进入 Linux 环境。
+
+
+### SSH 认证
+
+在 Windows 上生成密钥对
+- 连续按 3 次回车（不设置密码，否则就达不到“自动登录”的效果）。
+- 此时公钥和私钥已经保存在 C:\Users\你的用户名\.ssh\ 目录下。
+
+```powershell
+ssh-keygen -t rsa -b 4096
+```
+
+```powershell
+type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+```
