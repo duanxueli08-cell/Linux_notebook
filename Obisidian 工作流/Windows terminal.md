@@ -748,6 +748,24 @@ type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && 
     "name": "My_101"
     "commandline": "ssh root@10.0.0.101",
     "guid": "{0767c611-ea67-578b-8bb9-fdf7f75fcde3}",
-    "icon": "path/to/your/icon.png" // 可选，加个图标
+}
+```
+
+
+### 左右搏击之术
+
+```
+{
+    "actions": 
+    [
+        // 切换到左侧窗格
+        { "command": { "action": "moveFocus", "direction": "left" }, "keys": "ctrl+left" },
+        // 切换到右侧窗格
+        { "command": { "action": "moveFocus", "direction": "right" }, "keys": "ctrl+right" },
+        // 切换到上方窗格
+        { "command": { "action": "moveFocus", "direction": "up" }, "keys": "ctrl+up" },
+        // 切换到下方窗格
+        { "command": { "action": "moveFocus", "direction": "down" }, "keys": "ctrl+down" }
+    ]
 }
 ```
