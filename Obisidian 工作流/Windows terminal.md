@@ -740,3 +740,14 @@ ssh-keygen -t rsa -b 4096
 ```powershell
 type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 ```
+
+打开 Windows Terminal 设置 -> “打开 JSON 文件”。
+在 profiles.list 里添加：( 确保 guid 的唯一性 )
+```
+{
+    "name": "My_101"
+    "commandline": "ssh root@10.0.0.101",
+    "guid": "{0767c611-ea67-578b-8bb9-fdf7f75fcde3}",
+    "icon": "path/to/your/icon.png" // 可选，加个图标
+}
+```
