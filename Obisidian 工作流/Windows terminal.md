@@ -766,3 +766,15 @@ type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && 
 
 
 
+### 快捷键启动窗格
+
+背景：
+	我在之前设计了两个虚拟机的远程免密 SSH 认证，现在想要进一步做快捷键启动，系统有自定义的快捷键，但是敲击后无法生效！
+
+解决经过：
+
+- 修改默认终端应用程序
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260103182237146.png)
+
+- 修改 JSON 文件，将 "keybindings" 字段下涉及到对应快捷键的空绑定删除！
+![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260103182415883.png)
