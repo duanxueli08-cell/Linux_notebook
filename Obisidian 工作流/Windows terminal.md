@@ -662,6 +662,9 @@ if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
 
 
 ### WSL
+
+#### 下载安装
+
 - WSL（Windows Subsystem for Linux，Windows 子系统 for Linux）;
 - 运行 Linux 命令行工具
 - 与 Windows 文件系统无缝集成
@@ -680,7 +683,8 @@ wsl --install
 默认安装 Ubuntu 发行版（来自 Microsoft Store）
 
 重启后，会弹出一个终端界面自动下载安装 Ubuntu 系统
-![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260103143906638.png)
+![](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260103143906638.png)
+
 
 
 系统会自动启动 Ubuntu 并提示你：
@@ -692,6 +696,7 @@ administrator
 设置 密码（输入时不会显示字符，正常输入后回车即可）
 ✅ 安装完成！之后你可以在开始菜单中找到 “Ubuntu” 或通过 wsl 命令进入 Linux 环境。
 
+#### 优化
 
 - 关闭侧通道缓解 (根据个人需求决定)
 
@@ -706,6 +711,20 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\M
 # 恢复默认（如需重新启用）：
 Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverride"
 Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverrideMask"
+```
+
+#### 回退
+
+```
+# 查看已安装的发行版：
+wsl -l -v
+# 逐个卸载每个发行版
+wsl --unregister Ubuntu
+
+# 卸载 WSL 内核
+打开 设置 → 应用 → 已安装的应用
+搜索 “Windows Subsystem for Linux Kernel”
+卸载它（这是一个独立的 .msi 组件）
 ```
 
 ### SSH 认证
