@@ -693,6 +693,21 @@ administrator
 ✅ 安装完成！之后你可以在开始菜单中找到 “Ubuntu” 或通过 wsl 命令进入 Linux 环境。
 
 
+- 关闭侧通道缓解 (根据个人需求决定)
+
+⚠️ 警告：关闭此功能会降低系统对 Spectre/Meltdown 等硬件级漏洞的防护能力。仅建议在隔离测试环境中操作。
+```
+# 禁用基于 Hypervisor 的侧通道缓解
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverride" -Value 3
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverrideMask" -Value 3
+```
+
+```
+# 恢复默认（如需重新启用）：
+Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverride"
+Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "FeatureSettingsOverrideMask"
+```
+
 ### SSH 认证
 
 在 Windows 上生成密钥对
