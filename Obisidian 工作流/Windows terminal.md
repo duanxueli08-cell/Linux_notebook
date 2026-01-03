@@ -743,6 +743,7 @@ type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && 
 
 打开 Windows Terminal 设置 -> “打开 JSON 文件”。
 在 profiles.list 里添加：( 确保 guid 的唯一性 )
+==切记不要用 Windows 系统自带的 notepod ！Never Never Never==
 ```
 {
     "name": "My_101"
