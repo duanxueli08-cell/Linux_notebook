@@ -752,20 +752,16 @@ type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && 
 ```
 
 
-### 左右搏击之术
+### 操作
 
-```
-{
-    "actions": 
-    [
-        // 切换到左侧窗格
-        { "command": { "action": "moveFocus", "direction": "left" }, "keys": "ctrl+left" },
-        // 切换到右侧窗格
-        { "command": { "action": "moveFocus", "direction": "right" }, "keys": "ctrl+right" },
-        // 切换到上方窗格
-        { "command": { "action": "moveFocus", "direction": "up" }, "keys": "ctrl+up" },
-        // 切换到下方窗格
-        { "command": { "action": "moveFocus", "direction": "down" }, "keys": "ctrl+down" }
-    ]
-}
-```
+最有用的操作：
+
+	上一个选项卡 / 下一个选项卡  =  切换窗格 
+	新建标签页  = 新建窗格
+	关闭窗格
+	打开设置
+	打开设置文件（JSON）
+	重新启动连接
+
+
+
