@@ -450,19 +450,18 @@ Ubuntu2404
 
 ```powershell
 # 按照规划配置修改主机名（唯一的主机名）
-hostnamectl set-hostname master1.wang.org
-hostnamectl set-hostname master2.wang.org
-hostnamectl set-hostname master3.wang.org
-hostnamectl set-hostname node1.wang.org
-hostnamectl set-hostname node2.wang.org
-hostnamectl set-hostname node3.wang.org
+hostnamectl set-hostname master1
+hostnamectl set-hostname master2
+hostnamectl set-hostname master3
+hostnamectl set-hostname node1
+hostnamectl set-hostname node2
+hostnamectl set-hostname node3
 hostnamectl set-hostname ha1
 hostnamectl set-hostname ha2
 
 
 cat >> /etc/hosts <<'eof'
-10.0.0.100 kubeapi.wang.org kubeapi
-10.0.0.101 master1.wang.org master1
+10.0.0.101 kubeapi.wang.org kubeapi master1
 10.0.0.102 master2.wang.org master2
 10.0.0.103 master3.wang.org master3
 10.0.0.104 node1.wang.org node1
