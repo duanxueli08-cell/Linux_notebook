@@ -8,6 +8,21 @@
 - **Worker节点**：明确新增/删除流程，含“删除后重新加入Worker节点”的实操范例。
 - **Token管理**：提供查看当前token、重生token的操作方法。
 
+#### 删除其中一个 Master 节点
+注意：删除Master节点后，要保留至少半数以上个Master节点，否则集群失败
+~~~
+# 在保留的其中一个节点上 master1 执行下面操作，指定删除master3.wang.org 节点
+kubectl drain master3.wang.org --ignore-daemonsets
+kubectl delete node master3.wang.org
+# 在 master3 执行删除本机上面的信息
+kubeadm reset -f --cri-socket=unix:///run/cri-dockerd.sock
+rm -rf /etc/cni/net.d/ ~/.kube /etc/kubernetes
+apt -y remove kubeadm kubelet kubectl
+# 建议重启清理环境
+reboot
+~~~
+
+
 ## 2 Kubernetes集群备份与还原
 ### 2.1 容灾架构与方案
 - 明确容灾目标与策略，覆盖备份恢复、主备（Active-Standby）、双活（Active-Active）架构设计。
