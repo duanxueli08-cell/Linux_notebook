@@ -264,4 +264,54 @@ main
 图灵测试
 ![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20251224170803576.png)
 
+```
 
+
+### 后续问题
+
+在 Obsidian + PicGo + GitHub 的图文分离架构中，默认只支持增量上传（即“用到才传”），不支持自动删除远端（GitHub）已失效的图片。要实现“全量同步”（包括删除不再引用的图片），需要额外的策略或工具。以下是推荐的方案：
+
+#### 方案：使用脚本定期清理 GitHub 中未被引用的图片
+
+1. 原理：
+- 扫描 Obsidian 笔记库中所有 .md 文件，提取所有引用的图片文件名（如 20240512102345.png）。
+- 列出 GitHub 图床仓库中的所有图片。
+- 对比两者，删除 GitHub 中存在但笔记中未引用的图片。
+
+2. 实现步骤：
+获取本地引用的图片列表
+```powershell
+# 在 Obsidian 库根目录执行（Linux/macOS）
+grep -rhoE '!\[.*\](https://raw\.githubusercontent\.com/你的用户名/图床仓库/分支/images/[^)]+)' . --include="*.md" \
+  | sed 's/.*\/images\///' > /tmp/used_images.txt
+```
+
+> 注意：URL 需根据你的 PicGo 配置调整
+> （如是否用 raw.githubusercontent.com 或自定义 CDN）
+
+获取 GitHub 图床仓库中的图片列表
+可通过 GitHub API 或直接 clone 图床仓库：
+
+```powershell
+git clone https://github.com/你的用户名/图床仓库.git /tmp/image-repo
+
+ls /tmp/image-repo/images > /tmp/all_images.txt
+```
+
+
+3. 计算差集并删除远端图片
+
+```powershell
+comm -23 <(sort /tmp/all_images.txt) <(sort /tmp/used_images.txt) > /tmp/to_delete.txt
+
+# 删除本地副本并推送到 GitHub
+cd /tmp/image-repo
+cat /tmp/to_delete.txt | xargs -I {} git rm "images/{}"
+git commit -m "Auto clean unused images"
+git push
+```
+
+
+4. 自动化（可选）
+用 cron（Linux/macOS）或 Task Scheduler（Windows）每周运行一次。
+或集成到 Obsidian 的“每日笔记”工作流中（通过 Templater + Shell commands 插件）。
