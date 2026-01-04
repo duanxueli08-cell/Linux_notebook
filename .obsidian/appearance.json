@@ -3,6 +3,6 @@
   "theme": "moonstone",
   "baseFontSizeAction": true,
   "nativeMenus": true,
-  "baseFontSize": 23,
-  "cssTheme": "Minimal"
+  "baseFontSize": 16,
+  "cssTheme": "AnuPpuccin"
 }
