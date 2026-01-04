@@ -3,7 +3,7 @@
 # Kubernetes集群维护管理笔记
 
 ## 1 Kubernetes集群节点管理
-### 1.1 节点增操作
+### 1.1 Master 节点增操作
 
 #### 📌 前提条件
 - 现有集群是用 kubeadm 初始化的。
@@ -181,9 +181,99 @@ kubeadm join kubeapi.wang.org:6443 \
 ```
 
 
-### 1.2 节点删操作
+### 1.2 Master 节点删操作
 
+- 应用场景：当一个Master出现故障时,需要添加或删除Master节点操作,从而修复节点后, 再重新加入集群,避免 ETCD 错误
+- 注意：删除Master节点后，要保留至少半数以上个Master节点，否则集群失败。
 
+#### 操作步骤
+
+**在原 master 节点（master1）上驱逐新 master 上的 Pod 并删除节点**
+```
+# 1. 查看节点状态（确认 master2 已加入）
+kubectl get nodes
+
+# 2. 驱逐 master2 上的 Pod（包括系统组件）
+kubectl cordon master2.wang.org  # 标记节点不可调度
+kubectl drain master2.wang.org --ignore-daemonsets --delete-emptydir-data
+
+# 3. 删除节点
+kubectl delete node master2.wang.org
+```
+
+**在要删除的 master 节点（master2）上执行 kubeadm reset**
+```
+# 停止 kubelet 并重置 k8s 配置
+sudo kubeadm reset -f
+
+# 停止 kubelet 服务
+sudo systemctl stop kubelet
+
+# 清理配置文件
+sudo rm -rf /etc/kubernetes/
+sudo rm -rf ~/.kube/
+
+# 清理 CNI 网络配置
+sudo rm -rf /etc/cni/net.d/
+sudo rm -rf /var/lib/cni/
+
+# 清理 iptables 规则
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
+
+# 重启 container runtime
+sudo systemctl restart containerd   # 或 docker
+```
+
+**在原 master 节点（master1）上从 etcd 集群中移除该节点**
+
+>🔑 关键步骤：确保 etcd 成员也被清理
+
+```
+# 1. 获取 etcd pod 名称（通常在 master1 上）
+kubectl -n kube-system get pods | grep etcd
+
+# 2. 检查 etcd 成员列表
+kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  --endpoints=https://127.0.0.1:2379 \
+  member list -w table
+```
+
+找到 master2 对应的 etcd 成员 ID，然后删除：
+```
+kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  --endpoints=https://127.0.0.1:2379 \
+  member remove <member-id-of-master2>
+```
+
+>💡 <member-id-of-master2> 是上一步 member list 中 master2 对应的 ID（如 8a8a8a8a8a8a8a8a）
+
+**验证集群状态**
+```powershell
+# 1. 检查节点数量
+kubectl get nodes
+# 应该只有 master1 + 3 个 worker
+
+# 2. 检查 etcd 成员
+kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  --endpoints=https://127.0.0.1:2379 \
+  member list -w table
+# 应该只显示 master1 的 etcd 成员
+```
+
+#### 🛠️ 补充说明
+
+kubectl drain：确保该节点上的 Pod 被安全迁移（对于 control-plane Pod，实际上会直接删除）
+kubeadm reset：清理 kubelet、证书、manifests 等，恢复到未加入集群状态
+etcd member remove：必须手动执行，否则 etcd 集群中仍有该节点的记录，可能影响健康状态
 
 
 ## 2 Kubernetes集群备份与还原
