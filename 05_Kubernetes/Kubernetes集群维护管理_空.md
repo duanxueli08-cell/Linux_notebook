@@ -194,11 +194,11 @@ kubeadm join kubeapi.wang.org:6443 \
 kubectl get nodes
 
 # 2. 驱逐 master2 上的 Pod（包括系统组件）
-kubectl cordon master2.wang.org  # 标记节点不可调度
-kubectl drain master2.wang.org --ignore-daemonsets --delete-emptydir-data
+kubectl cordon master2  # 标记节点不可调度
+kubectl drain master2 --ignore-daemonsets --delete-emptydir-data
 
 # 3. 删除节点
-kubectl delete node master2.wang.org
+kubectl delete node master2
 ```
 
 **在要删除的 master 节点（master2）上执行 kubeadm reset**
