@@ -10,7 +10,7 @@
 
 #### 删除其中一个 Master 节点
 注意：删除Master节点后，要保留至少半数以上个Master节点，否则集群失败
-~~~
+~~~powershell
 # 在保留的其中一个节点上 master1 执行下面操作，指定删除master3.wang.org 节点
 kubectl drain master3.wang.org --ignore-daemonsets
 kubectl delete node master3.wang.org
