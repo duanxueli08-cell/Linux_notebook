@@ -269,49 +269,160 @@ main
 
 ### 后续问题
 
-在 Obsidian + PicGo + GitHub 的图文分离架构中，默认只支持增量上传（即“用到才传”），不支持自动删除远端（GitHub）已失效的图片。要实现“全量同步”（包括删除不再引用的图片），需要额外的策略或工具。以下是推荐的方案：
+在 Obsidian + PicGo + GitHub 的图文分离架构中，默认只支持增量上传（即“用到才传”），不支持自动删除远端（GitHub）已失效的图片。要实现“全量同步”（包括删除不再引用的图片），需要额外的策略或工具。以下是编写了一个 **一体式 PowerShell 脚本**：
 
-#### 方案：使用脚本定期清理 GitHub 中未被引用的图片
+1. 扫描你本地 Obsidian 笔记库中所有 `.md` 文件；
+2. 提取所有引用的 GitHub 图床图片文件名（匹配你的 URL 格式）；
+3. 克隆或更新你的图床仓库到临时目录；
+4. 对比找出未被引用的图片；
+5. 自动从 GitHub 仓库中删除这些“孤儿图片”并推送。
 
-1. 原理：
-- 扫描 Obsidian 笔记库中所有 .md 文件，提取所有引用的图片文件名（如 20240512102345.png）。
-- 列出 GitHub 图床仓库中的所有图片。
-- 对比两者，删除 GitHub 中存在但笔记中未引用的图片。
+---
 
-2. 实现步骤：
-获取本地引用的图片列表
-```powershell
-# 在 Obsidian 库根目录执行（Linux/macOS）
-grep -rhoE '!\[.*\](https://raw\.githubusercontent\.com/你的用户名/图床仓库/分支/images/[^)]+)' . --include="*.md" \
-  | sed 's/.*\/images\///' > /tmp/used_images.txt
+### ✅ 使用前提
+
+请确保以下工具已安装并配置好：
+
+- **Git for Windows**（命令行可用 `git`）
+- **PowerShell 5.1+**（Win10 默认自带）
+- 你的系统能通过 HTTPS 访问 GitHub（建议配置 [GitHub Personal Access Token](https://github.com/settings/tokens) 用于写权限）
+
+> 🔐 如果你的仓库是 **私有仓库**，请使用 PAT（Personal Access Token）代替密码。如果是公开仓库但需推送，也建议用 PAT。
+
+---
+
+### 📜 一体式清理脚本（保存为 `clean-obsidian-images.ps1`）
+
+二选一 （临时bian'li'a）
+
+```
+$env:Token="duanxueli_github_Token_here"
 ```
 
-> 注意：URL 需根据你的 PicGo 配置调整
-> （如是否用 raw.githubusercontent.com 或自定义 CDN）
-
-获取 GitHub 图床仓库中的图片列表
-可通过 GitHub API 或直接 clone 图床仓库：
+由于 该脚本放置在 obsidian 笔记仓库中，若是将 Token 直接写入脚本，则直接将 Token 在 github 中进行暴露；所以进行分离设计，即：每次执行脚本前手动执行一遍环境变量；
 
 ```powershell
-git clone https://github.com/你的用户名/图床仓库.git /tmp/image-repo
+# clean-obsidian-images.ps1
+# 作者：Qwen / 针对 duanxueli08-cell 的 Obsidian + GitHub 图床环境定制
+# 功能：自动删除 GitHub 图床中未被本地笔记引用的图片
 
-ls /tmp/image-repo/images > /tmp/all_images.txt
+# === 配置区 ===
+$OBSIDIAN_VAULT_PATH = "C:\Program Files\Obsidian\data\Obsidian Vault\"
+$GITHUB_REPO_URL = "https://github.com/duanxueli08-cell/Obsidian-Images.git"
+$IMAGE_SUBDIR = "img"  # 图片在仓库中的子目录
+$TEMP_REPO_PATH = "$env:TEMP\Obsidian-Images-Clean"
+
+# 可选：如果你的仓库是私有的，或需要写权限，请使用带 token 的 URL
+# 格式：https://<TOKEN>@github.com/duanxueli08-cell/Obsidian-Images.git
+$GITHUB_REPO_URL = "https://$Token@github.com/duanxueli08-cell/Obsidian-Images.git"
+
+# === 开始执行 ===
+Write-Host "[+] 开始清理未使用的 GitHub 图床图片..." -ForegroundColor Cyan
+
+# 1. 扫描所有 .md 文件，提取引用的图片文件名（仅 img/ 下的）
+Write-Host "[1/4] 扫描本地笔记中引用的图片..."
+$usedImages = @()
+Get-ChildItem -Path $OBSIDIAN_VAULT_PATH -Recurse -Include "*.md" | ForEach-Object {
+    $content = Get-Content $_.FullName -Raw
+    # 匹配形如 https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/xxx.png 的 URL
+    $matches = [regex]::Matches($content, 'https://raw\.githubusercontent\.com/duanxueli08-cell/Obsidian-Images/main/img/([^)\s]+)')
+    foreach ($m in $matches) {
+        $filename = $m.Groups[1].Value
+        if ($filename -match '\.(png|jpg|jpeg|gif|webp)$') {
+            $usedImages += $filename
+        }
+    }
+}
+$usedImages = $usedImages | Sort-Object -Unique
+Write-Host "  -> 共找到 $($usedImages.Count) 个被引用的图片文件"
+
+# 2. 克隆或更新图床仓库到临时目录
+Write-Host "[2/4] 同步图床仓库到临时目录..."
+if (Test-Path $TEMP_REPO_PATH) {
+    Remove-Item -Recurse -Force $TEMP_REPO_PATH
+}
+git clone --branch main --depth 1 $GITHUB_REPO_URL $TEMP_REPO_PATH
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "克隆仓库失败，请检查网络或权限（是否需要 PAT？）"
+    exit 1
+}
+
+# 3. 获取仓库中所有图片文件
+$imageDir = Join-Path $TEMP_REPO_PATH $IMAGE_SUBDIR
+if (-not (Test-Path $imageDir)) {
+    Write-Host "  -> img 目录不存在，无图片可清理。" -ForegroundColor Yellow
+    exit 0
+}
+$allImages = Get-ChildItem -Path $imageDir -File | ForEach-Object { $_.Name }
+Write-Host "  -> 仓库中共有 $($allImages.Count) 个图片文件"
+
+# 4. 找出未被引用的图片
+$unusedImages = @()
+foreach ($img in $allImages) {
+    if ($usedImages -notcontains $img) {
+        $unusedImages += $img
+    }
+}
+Write-Host "  -> 发现 $($unusedImages.Count) 个未被引用的图片"
+
+if ($unusedImages.Count -eq 0) {
+    Write-Host "[✓] 无需清理，所有图片均被引用。" -ForegroundColor Green
+    exit 0
+}
+
+# 5. 删除未使用的图片并提交推送
+Write-Host "[3/4] 删除未使用的图片..."
+foreach ($img in $unusedImages) {
+    $filePath = Join-Path $imageDir $img
+    git -C $TEMP_REPO_PATH rm "$IMAGE_SUBDIR/$img"
+    Write-Host "  -> 删除 $img"
+}
+
+Write-Host "[4/4] 提交并推送到 GitHub..."
+git -C $TEMP_REPO_PATH config user.name "Obsidian Cleaner"
+git -C $TEMP_REPO_PATH config user.email "cleaner@example.com"
+git -C $TEMP_REPO_PATH commit -m "Auto clean: remove $($unusedImages.Count) unused images"
+git -C $TEMP_REPO_PATH push origin main
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[✓] 清理完成！已成功推送删除操作。" -ForegroundColor Green
+} else {
+    Write-Error "推送失败！请手动检查权限或网络。"
+}
+
+# 可选：清理临时目录（注释掉以便调试）
+# Remove-Item -Recurse -Force $TEMP_REPO_PATH
 ```
 
+---
 
-3. 计算差集并删除远端图片
+### 🔧 使用步骤
 
-```powershell
-comm -23 <(sort /tmp/all_images.txt) <(sort /tmp/used_images.txt) > /tmp/to_delete.txt
+1. **修改脚本中的 `$OBSIDIAN_VAULT_PATH`**  
+   例如：`$OBSIDIAN_VAULT_PATH = "D:\MyNotes"`
 
-# 删除本地副本并推送到 GitHub
-cd /tmp/image-repo
-cat /tmp/to_delete.txt | xargs -I {} git rm "images/{}"
-git commit -m "Auto clean unused images"
-git push
-```
+2. **（可选）配置 GitHub PAT**  
+   如果你的仓库是私有的，或推送时提示权限错误：
+   - 去 [GitHub → Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens) 创建一个 token（勾选 `repo` 权限）
+   - 取消注释脚本中的 `$GITHUB_REPO_URL = "https://YOUR_PAT_HERE@..."` 行，并填入 token
 
+2. **允许 PowerShell 执行脚本**（首次运行）(永久生效)：
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
 
-4. 自动化（可选）
-用 cron（Linux/macOS）或 Task Scheduler（Windows）每周运行一次。
-或集成到 Obsidian 的“每日笔记”工作流中（通过 Templater + Shell commands 插件）。
+3. **运行脚本**：
+   ```powershell
+   .\clean-obsidian-images.ps1
+   ```
+
+---
+
+### ⚠️ 注意事项
+
+- 脚本默认 **不删除本地 Obsidian 中的图片文件**（因为你是图文分离，本地可能没存图）。
+- 所有操作基于 **远程 URL 引用分析**，确保你的笔记中图片链接是 `https://raw.githubusercontent.com/.../main/img/xxx.png` 格式。
+- 首次运行建议先 **备份图床仓库**，或注释掉最后的 `push` 行进行 dry-run 测试。
+
+---
+
