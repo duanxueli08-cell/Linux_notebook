@@ -3,24 +3,187 @@
 # Kubernetes集群维护管理笔记
 
 ## 1 Kubernetes集群节点管理
-### 1.1 节点增删操作
-- **Master节点**：覆盖添加/删除流程，含删除Master时的etcd信息清理、添加Master的命令获取、节点重新加入集群及权限授权。
-- **Worker节点**：明确新增/删除流程，含“删除后重新加入Worker节点”的实操范例。
-- **Token管理**：提供查看当前token、重生token的操作方法。
+### 1.1 节点增操作
 
-#### 删除其中一个 Master 节点
-注意：删除Master节点后，要保留至少半数以上个Master节点，否则集群失败
-~~~powershell
-# 在保留的其中一个节点上 master1 执行下面操作，指定删除master3.wang.org 节点
-kubectl drain master3.wang.org --ignore-daemonsets
-kubectl delete node master3.wang.org
-# 在 master3 执行删除本机上面的信息
-kubeadm reset -f --cri-socket=unix:///run/cri-dockerd.sock
-rm -rf /etc/cni/net.d/ ~/.kube /etc/kubernetes
-apt -y remove kubeadm kubelet kubectl
-# 建议重启清理环境
-reboot
-~~~
+#### 📌 前提条件
+- 现有集群是用 kubeadm 初始化的。
+- 网络插件（如 Calico、Flannel）已正确安装。
+- 新节点满足 k8s 节点要求（关闭 swap、安装 container runtime、kubeadm/kubelet/kubectl 等）。
+- 已有集群的控制平面未使用外部 etcd（如果是外部 etcd，流程略有不同）。
+
+#### 步骤概览
+- 准备新 master 节点环境
+- 在原 master 上生成用于加入控制平面的 join 命令
+- 在新节点上执行 join 命令加入控制平面
+- 验证新 master 是否就绪
+- （可选）配置负载均衡器（如 HAProxy + Keepalived）供 kube-apiserver 访问
+- 更新 worker 节点的 kubeconfig（如果使用 LB 地址）
+
+#### 具体步骤
+
+**第一步：准备新 master 节点**
+在新机器（例如 master2）上执行：
+
+```
+# 1. 关闭 swap
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+
+# 2. 安装 container runtime（以 containerd 为例）
+sudo apt update && sudo apt install -y containerd
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+sudo systemctl restart containerd
+
+# 3. 安装 kubeadm, kubelet, kubectl（版本需与原集群一致！）
+kubeadm version
+kubelet --version
+kubectl version
+
+VERSION=1.34.1  # 替换为你的集群版本
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl
+curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt update
+sudo apt install -y kubelet=$VERSION-00 kubeadm=$VERSION-00 kubectl=$VERSION-00
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# 4. 启动 kubelet
+sudo systemctl enable --now kubelet
+```
+
+> ⚠️ 注意：确保新节点能解析原 master 主机名，或使用 IP；时间同步（NTP）也应开启。
+
+**第二步：在原 master 上生成 control-plane join 命令**
+在 原 master 节点 执行：
+```
+# 生成加入控制平面的 token 和证书 key
+kubeadm init phase upload-certs --upload-certs
+
+# 输出类似于这样的信息
+I0104 17:58:27.167244   11086 version.go:260] remote version is much newer: v1.35.0; falling back to: stable-1.34
+[upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
+[upload-certs] Using certificate key:
+73171e59d018d2621c456910ae8f860b333bda07b84cec72d79877250444ce3a
+```
+该命令会输出一个 certificate-key（有效期 2 小时，可使用 --ttl 指定更长）。
+
+然后生成 join 命令：
+```
+kubeadm token create --print-join-command
+
+# 输出类似于这样的信息
+kubeadm join kubeapi.wang.org:6443 --token eziet4.2l08uk6wctkaj3k8 --discovery-token-ca-cert-hash sha256:59f295053e6017ef2324c61d290e4f4d0652aad58fbd43f685e85ddc83b7f922
+```
+
+**第三步：在新 master 节点执行 join 命令**
+
+手动加上 control-plane 相关参数，在新 master 节点执行该指令，完整 join 命令如下：
+```
+kubeadm join 10.0.0.101:6443 \
+  --token abcdef.0123456789abcdef \
+  --discovery-token-ca-cert-hash sha256:59f295053e6017ef2324c61d290e4f4d0652aad58fbd43f685e85ddc83b7f922 \
+  --control-plane \
+  --certificate-key 73171e59d018d2621c456910ae8f860b333bda07b84cec72d79877250444ce3a
+```
+等待完成（可能需要几分钟）。成功后会提示：
+
+>This node has joined the cluster and a new control plane instance was created...
+
+> 注意：该挂梯子该市要挂梯子，不要忘了，不然镜像拉不下来！！！
+
+
+
+**第四步（强烈推荐）：配置负载均衡器（LB）**
+
+因为现在有多个 API Server，客户端（包括 kubelet、kubectl、worker 节点）应通过 统一入口 访问。
+
+**第六步：更新 worker 节点 kubeconfig（如果使用了 LB）**
+
+编辑每个 worker 节点上的 /etc/kubernetes/kubelet.conf，将 server: 改为 LB 地址：
+```
+clusters:
+- cluster:
+    server: https://<LB-VIP>:6443
+```
+然后重启 kubelet：
+```
+sudo systemctl restart kubelet
+```
+
+**第五步：授权 Master 管理功能**
+
+```
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+**第六步：验证新 master 是否就绪**
+
+检查节点：
+```
+kubectl get nodes
+```
+
+检查 etcd 成员是否增加：
+```
+kubectl exec -n kube-system etcd-master1 -- etcdctl \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  --endpoints=https://127.0.0.1:2379 \
+  member list -w table
+```
+
+#### 故障问题
+
+**问题**：在已有单 master Kubernetes 集群中添加第二个 master 节点时，`kubeadm join --control-plane` 失败，报错：
+
+```
+unable to add a new control plane instance to a cluster that doesn't have a stable controlPlaneEndpoint address
+```
+
+**根本原因**：  
+原始集群初始化时**未配置 `controlPlaneEndpoint`**（如 `kubeapi.wang.org:6443`），导致 kubeadm 拒绝加入新的 control-plane 节点（多 master 必须有统一 API 入口）。
+
+**解决步骤**：
+1. 在原 master 节点导出并编辑 `kubeadm.yaml`，**添加 `controlPlaneEndpoint: "kubeapi.wang.org:6443"`**。
+2. 使用 **`kubeadm init phase upload-config kubeadm --config kubeadm.yaml`**（非 `kubectl apply`）更新集群配置。
+3. 确保新 master 能解析该域名，并执行正确的 `kubeadm join --control-plane` 命令。
+
+**关键点**：  
+- `controlPlaneEndpoint` 是多 master 高可用的前提。  
+- kubeadm 配置必须通过 `kubeadm` 命令更新，不能用 `kubectl apply`。
+
+```
+# 导出现有 kubeadm 配置
+kubectl -n kube-system get cm kubeadm-config -o jsonpath='{.data.ClusterConfiguration}' > kubeadm.yaml
+
+# 编辑 kubeadm.yaml，添加 controlPlaneEndpoint
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+controlPlaneEndpoint: "kubeapi.wang.org:6443"   # ← 添加这一行
+
+# 重新上传配置到集群
+kubeadm init phase upload-config kubeadm --config kubeadm.yaml
+
+# 验证是否生效
+kubectl -n kube-system get cm kubeadm-config -o yaml | grep -A 5 "kind: ClusterConfiguration"
+
+# 回到 master2，这次执行 join 命令就能生效了
+kubeadm join kubeapi.wang.org:6443 \
+  --token eziet4.2l08uk6wctkaj3k8 \
+  --discovery-token-ca-cert-hash sha256:59f295053e6017ef2324c61d290e4f4d0652aad58fbd43f685e85ddc83b7f922 \
+  --control-plane \
+  --certificate-key 73171e59d018d2621c456910ae8f860b333bda07b84cec72d79877250444ce3a
+```
+
+
+### 1.2 节点删操作
+
+
 
 
 ## 2 Kubernetes集群备份与还原
