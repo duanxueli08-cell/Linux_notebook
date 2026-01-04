@@ -10,7 +10,7 @@ $TEMP_REPO_PATH = "$env:TEMP\Obsidian-Images-Clean"
 
 # 可选：如果你的仓库是私有的，或需要写权限，请使用带 token 的 URL
 # 格式：https://<TOKEN>@github.com/duanxueli08-cell/Obsidian-Images.git
-$GITHUB_REPO_URL = "https://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@github.com/duanxueli08-cell/Obsidian-Images.git"
+$GITHUB_REPO_URL = "https://$Token@github.com/duanxueli08-cell/Obsidian-Images.git"
 
 # === 开始执行 ===
 Write-Host "[+] 开始清理未使用的 GitHub 图床图片..." -ForegroundColor Cyan

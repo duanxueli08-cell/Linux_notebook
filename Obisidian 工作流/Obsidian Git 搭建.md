@@ -291,15 +291,27 @@ main
 
 ---
 
-### 📜 一体式清理脚本（保存为 `clean-obsidian-images.ps1`）
+### 📜 一体式清理脚本
+（保存为 `clean-obsidian-images.ps1`）
 
-二选一 （临时bian'li'a）
+二选一 （临时变量）
 
 ```
 $env:Token="duanxueli_github_Token_here"
 ```
 
 由于 该脚本放置在 obsidian 笔记仓库中，若是将 Token 直接写入脚本，则直接将 Token 在 github 中进行暴露；所以进行分离设计，即：每次执行脚本前手动执行一遍环境变量；
+
+二选一 （永久变量）
+
+```
+[Environment]::SetEnvironmentVariable("Token", "你的实际token", "User")
+```
+
+注意："User" 表示 当前用户级别；
+设置后在当前已打开的终端窗口不会立即生效，退出重新进入！
+
+
 
 ```powershell
 # clean-obsidian-images.ps1
@@ -399,12 +411,8 @@ if ($LASTEXITCODE -eq 0) {
 ### 🔧 使用步骤
 
 1. **修改脚本中的 `$OBSIDIAN_VAULT_PATH`**  
-   例如：`$OBSIDIAN_VAULT_PATH = "D:\MyNotes"`
+   这里我根据我的需求将路径设置为 Obsidian 仓库的根目录，如此操作，脚本当前所在路径也不会影响实际执行的路径参数！
 
-2. **（可选）配置 GitHub PAT**  
-   如果你的仓库是私有的，或推送时提示权限错误：
-   - 去 [GitHub → Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens) 创建一个 token（勾选 `repo` 权限）
-   - 取消注释脚本中的 `$GITHUB_REPO_URL = "https://YOUR_PAT_HERE@..."` 行，并填入 token
 
 2. **允许 PowerShell 执行脚本**（首次运行）(永久生效)：
    ```powershell
