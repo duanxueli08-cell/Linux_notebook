@@ -4462,7 +4462,7 @@ kubectl get pv,pvc,pod
 
 ```powershell
 # 准备NFS共享存储
-mkdir -p /nfsdata/www
+mkdir -p /data/sc-nfs
 apt update &&apt -y install nfs-server
 echo "/data/sc-nfs *(rw,no_root_squash)" >> /etc/exports
 exportfs -r && exportfs -v
