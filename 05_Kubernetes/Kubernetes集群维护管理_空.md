@@ -61,10 +61,10 @@ sudo systemctl enable --now kubelet
 kubeadm init phase upload-certs --upload-certs
 
 # 输出类似于这样的信息
-I0104 17:58:27.167244   11086 version.go:260] remote version is much newer: v1.35.0; falling back to: stable-1.34
+I0105 11:54:48.629882   44784 version.go:260] remote version is much newer: v1.35.0; falling back to: stable-1.34
 [upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
 [upload-certs] Using certificate key:
-73171e59d018d2621c456910ae8f860b333bda07b84cec72d79877250444ce3a
+106fe9dd03c90daea172d29a775baa8867a8a326a6e04bbf8522028e20c2de7a
 ```
 该命令会输出一个 certificate-key（有效期 2 小时，可使用 --ttl 指定更长）。
 
@@ -73,18 +73,18 @@ I0104 17:58:27.167244   11086 version.go:260] remote version is much newer: v1.3
 kubeadm token create --print-join-command
 
 # 输出类似于这样的信息
-kubeadm join kubeapi.wang.org:6443 --token eziet4.2l08uk6wctkaj3k8 --discovery-token-ca-cert-hash sha256:59f295053e6017ef2324c61d290e4f4d0652aad58fbd43f685e85ddc83b7f922
+kubeadm join kubeapi.wang.org:6443 --token nq9vzk.x08k4e417s48wzk6 --discovery-token-ca-cert-hash sha256:65b75caa165d8bace6bd59cf7d306eb002658b179e8062ac67f8a31010733cb6 
 ```
 
 **第三步：在新 master 节点执行 join 命令**
 
 手动加上 control-plane 相关参数，在新 master 节点执行该指令，完整 join 命令如下：
 ```
-kubeadm join 10.0.0.101:6443 \
+kubeadm join kubeapi.wang.org:6443 \
   --token abcdef.0123456789abcdef \
-  --discovery-token-ca-cert-hash sha256:59f295053e6017ef2324c61d290e4f4d0652aad58fbd43f685e85ddc83b7f922 \
+  --discovery-token-ca-cert-hash sha256:65b75caa165d8bace6bd59cf7d306eb002658b179e8062ac67f8a31010733cb6  \
   --control-plane \
-  --certificate-key 73171e59d018d2621c456910ae8f860b333bda07b84cec72d79877250444ce3a
+  --certificate-key 106fe9dd03c90daea172d29a775baa8867a8a326a6e04bbf8522028e20c2de7a
 ```
 等待完成（可能需要几分钟）。成功后会提示：
 
@@ -274,7 +274,7 @@ kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
 - kubeadm reset：清理 kubelet、证书、manifests 等，恢复到未加入集群状态
 - etcd member remove：必须手动执行，否则 etcd 集群中仍有该节点的记录，可能影响健康状态
 
-### 添加和删除 Worker 节点
+### 2 添加和删除 Worker 节点
 
 #### 添加新节点（worker）
 
@@ -286,9 +286,11 @@ kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
 -	新节点执行 join 命令
 -	验证 kubectl get nodes
 
-准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#准备工作]] 
-准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#Containerd]] 
-准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#K8s 软件源和 kubeadm]] 
+准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）]] 
+
+
+
+在 master 节点添加新节点的域名解析；
 
 在 master 节点生成 join 命令
 ```
@@ -297,13 +299,13 @@ kubeadm token create --print-join-command
 
 在新节点执行 join 命令
 ```
-sudo kubeadm join 192.168.1.100:6443 --token abcdef.0123456789abcdef \
-    --discovery-token-ca-cert-hash sha256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+kubeadm join kubeapi.wang.org:6443 --token 4jvw0r.bbuo12wdw3kdwxgp \
+        --discovery-token-ca-cert-hash sha256:65b75caa165d8bace6bd59cf7d306eb002658b179e8062ac67f8a31010733cb6
 ```
 
 验证节点加入
 ```
-kubectl get nodes
+kubectl get nodes &&  kubectl get pod -A -o wide
 ```
 
 可选：打标签或污点（按需）
@@ -312,6 +314,60 @@ kubectl label node new-worker-node role=worker
 # 或
 kubectl taint node new-worker-node key=value:NoSchedule
 ```
+
+
+#### 删除工作节点（worker）
+步骤 1：将节点标记为不可调度（cordon）
+> 防止新 Pod 被调度到该节点：
+
+```
+kubectl cordon node4
+```
+
+
+步骤 2：驱逐节点上的所有 Pod（drain）
+将该节点上所有可驱逐的 Pod 安全迁移到其他节点（StatefulSet、DaemonSet 等需特殊处理）：
+```
+kubectl drain node4 --ignore-daemonsets --delete-emptydir-data
+```
+1. --ignore-daemonsets：跳过 DaemonSet 管理的 Pod（如 Calico、kube-proxy），它们会在节点删除后自动消失。
+2. --delete-emptydir-data：允许删除使用 emptyDir 的临时数据（K8s 默认拒绝驱逐这类 Pod，除非明确允许）。
+3. 如果有本地存储或关键应用，建议先确认业务容忍度。
+
+
+步骤 3：从集群中删除节点对象
+```
+kubectl delete node node4
+```
+
+
+步骤 4：在被删除的节点上重置 kubeadm（可选但推荐）
+>目的：清理 kubelet、containerd 中残留的 Kubernetes 状态，便于重用或彻底退役。
+
+登录到该 node4 节点，执行：
+```
+# 重置 kubeadm 状态
+sudo kubeadm reset --cri-socket unix:///run/containerd/containerd.sock
+
+# 清理 iptables 规则（可选）
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
+
+# 清理 CNI 配置（可选）
+sudo rm -rf /etc/cni/net.d/
+
+# 重启 containerd（可选）
+sudo systemctl restart containerd
+```
+- 💡 注意：--cri-socket 参数指定 containerd 的 socket 路径（默认为 /run/containerd/containerd.sock），kubeadm v1.24+ 必须显式指定（因不再默认使用 Docker）。
+
+
+步骤 5：验证
+回到 master 节点：
+```
+kubectl get nodes
+```
+
+
 
 
 ## 2 Kubernetes集群备份与还原
