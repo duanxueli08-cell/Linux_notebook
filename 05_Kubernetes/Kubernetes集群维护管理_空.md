@@ -83,7 +83,7 @@ kubeadm join kubeapi.wang.org:6443 --token nq9vzk.x08k4e417s48wzk6 --discovery-t
 kubeadm join kubeapi.wang.org:6443 \
   --token abcdef.0123456789abcdef \
   --discovery-token-ca-cert-hash sha256:65b75caa165d8bace6bd59cf7d306eb002658b179e8062ac67f8a31010733cb6  \
-  --control-plane \
+  --control-plane \A
   --certificate-key 106fe9dd03c90daea172d29a775baa8867a8a326a6e04bbf8522028e20c2de7a
 ```
 等待完成（可能需要几分钟）。成功后会提示：
