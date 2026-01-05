@@ -276,9 +276,42 @@ kubectl exec -n kube-system etcd-master1.wang.org -- etcdctl \
 
 ### 添加和删除 Worker 节点
 
-#### 准备新节点（worker）
+#### 添加新节点（worker）
 
+📌 总结流程
+-	新节点安装 containerd 并配置 systemd cgroup
+-	禁用 swap，加载内核模块
+-	安装 kubelet/kubeadm（版本匹配）
+-	Master 生成 kubeadm join 命令
+-	新节点执行 join 命令
+-	验证 kubectl get nodes
 
+准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#准备工作]] 
+准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#Containerd]] 
+准备步骤参考：[[Kubernetes 大笔记#containerd 安装（主流）#K8s 软件源和 kubeadm]] 
+
+在 master 节点生成 join 命令
+```
+kubeadm token create --print-join-command
+```
+
+在新节点执行 join 命令
+```
+sudo kubeadm join 192.168.1.100:6443 --token abcdef.0123456789abcdef \
+    --discovery-token-ca-cert-hash sha256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+验证节点加入
+```
+kubectl get nodes
+```
+
+可选：打标签或污点（按需）
+```
+kubectl label node new-worker-node role=worker
+# 或
+kubectl taint node new-worker-node key=value:NoSchedule
+```
 
 
 ## 2 Kubernetes集群备份与还原
