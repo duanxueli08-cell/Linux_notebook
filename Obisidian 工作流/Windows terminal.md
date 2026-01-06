@@ -740,11 +740,15 @@ ssh-keygen -t rsa -b 4096
 ```powershell
 type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
 
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.104 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+———— 批量追加密钥 ————
 
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.105 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+$ips = "104", "105", "106"
+$pubKey = Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub"
 
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.106 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+foreach ($ip in $ips) {
+    Write-Host "正在处理 10.0.0.$ip ..."
+    echo $pubKey | ssh "root@10.0.0.$ip" "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+}
 ```
 
 打开 Windows Terminal 设置 -> “打开 JSON 文件”。
