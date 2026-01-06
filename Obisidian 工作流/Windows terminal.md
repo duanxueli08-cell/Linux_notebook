@@ -738,7 +738,13 @@ ssh-keygen -t rsa -b 4096
 ```
 
 ```powershell
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.101 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+
+type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.104 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+
+type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.105 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
+
+type $env:USERPROFILE\.ssh\id_rsa.pub | ssh root@10.0.0.106 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && sed -i -e 's#.*ssh#ssh#' -e 's#Shirley.*#Shirley#' ~/.ssh/authorized_keys"
 ```
 
 打开 Windows Terminal 设置 -> “打开 JSON 文件”。
