@@ -426,8 +426,6 @@ Restic / Rclone + 自定义脚本：用于备份 PV 中的文件数据。
 
 
 
-
-
 ### 2.2 备份还原方法
 - 提供4类备份方案：
   - 备份指定Kubernetes资源；
@@ -437,7 +435,89 @@ Restic / Rclone + 自定义脚本：用于备份 PV 中的文件数据。
 
 ### 2.3 ETCD备份与还原
 - **ETCD基础**：详解特性、应用场景、版本、架构、核心组件及工作原理（含Leader选举、数据一致性、读写流程等）。
-- **工具操作**：etcdctl/etcdutill的安装（二进制/包安装注意事项）、使用说明。
+- **工具操作**：etcdctl 和 etcdutl 工具安装
+
+
+
+安装方法：
+
+一、包安装 etcdctl 工具：包安装的版本可能不被新的k8集群支持（不建议）；
+
+二、二进制安装
+
+下载地址：https://github.com/etcd-io/etcd/releases
+
+```powershell
+# 查看仓库中 etcd 工具最新的版本
+apt list etcd-client 
+# 为了适配 k8s 版本，必须用新的 etcd 工具的版本
+crictl ps | grep etcd
+crictl exec 59a37e243b3f6 etcd --version
+```
+
+```powershell
+ETCD_VER=v3.6.4
+
+GOOGLE_URL=https://storage.googleapis.com/etcd
+GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
+DOWNLOAD_URL=${GOOGLE_URL}
+
+curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1 --no-same-owner
+cd etcd-v3.6.4-linux-amd64 && mv etcd etcdctl etcdutl  /usr/local/bin
+
+# 注意：k8s-1.34 以后版本 etcdutl 替换 etcdctl 工具实现还原
+etcd --version ; etcdctl version ; etcdutl version
+```
+
+三、将k8s集群内置的etcd的Pod的etcdctl工具导出至宿主机实现安装 (没搞成！)
+
+```powershell
+kubectl exec -n kube-system etcd-master1 -- /usr/local/bin/etcdctl version
+crictl ps | grep etcd
+crictl inspect k8s_etcd_etcd-master1.wang.org_kube-system_cd477d4acc2ceff619110f6adc21fe4e_10|grep MergedDir
+```
+
+
+
+在使用 etcdctl 时，可以通过设置环境变量来指定 etcd 集群的地址和认证信息：
+
+- ETCD_API: 新版变量 指定ETCD的版本,支持2和3两个版本
+- ETCDCTL_API : 指定ETCD的版本,支持2和3两个版本
+- ETCDCTL_ENDPOINTS : 指定 etcd 集群的地址，多个地址用逗号分隔。
+- ETCDCTL_CACERT : 指定 CA 证书文件路径。
+- ETCDCTL_CERT : 指定客户端证书文件路径。
+- ETCDCTL_KEY : 指定客户端私钥文件路径。
+
+```powershell
+kubectl get po -n kube-system etcd-master1 -o yaml|grep hostNetwork
+# 查看健康性 （k8s-v1.34 以后版本）
+ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key -w table endpoint health
+
+# 查看节点状态和leader角色 （k8s-v1.34 以后版本）
+ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key -w table endpoint status
+
+# 查看成员 （k8s-v1.34 以后版本）
+ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --write-out=table member list
+
+# 对 ETCD 数据碎片整理 (k8s-v1.34 以后版本)
+ETCD_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key defrag
+
+# 后续就不一一列举了！
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 - **实战案例**：etcdctl实现ETCD备份还原的流程说明，及kubesasz项目的备份范例。
 
 ### 2.4 Velero工具应用
