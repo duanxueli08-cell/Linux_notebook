@@ -363,7 +363,7 @@
   "enableCustomPromptTemplating": true,
   "enableSemanticSearchV3": false,
   "enableLexicalBoosts": true,
-  "suggestedDefaultCommands": false,
+  "suggestedDefaultCommands": true,
   "autonomousAgentMaxIterations": 4,
   "autonomousAgentEnabledToolIds": [
     "localSearch",
