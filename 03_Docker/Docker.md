@@ -624,6 +624,8 @@ systemctl restart docker
 
 # 上传前先打标签
 docker tag nginx:1.1 10.0.0.147/example/nginx:1.1
+---
+docker tag	源镜像名:源镜像标签 [仓库地址/][命名空间/]镜像名:标签
 # 然后就是登陆，但是登陆之前添加宿主机ip为不安全可通过策略中 ，修改json文件
 more /etc/docker/daemon.json 
     {
