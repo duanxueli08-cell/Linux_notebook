@@ -8,8 +8,8 @@
 		{"id":"391c1f539d7af66d","type":"text","text":"wordpress上线K8S，名称空间，coreDNS组件，Pod创建流程，发布策略实战","x":-1180,"y":1220,"width":660,"height":60,"color":"1"},
 		{"id":"255583447f717f36","type":"file","file":"浮光掠影/图片/rc，svc，Pod之间的关系.jpg","x":1294,"y":1400,"width":733,"height":1140},
 		{"id":"cda6506cfa47d73b","type":"file","file":"浮光掠影/图片/Pod的创建流程图解.jpg","x":1294,"y":-470,"width":733,"height":1794},
-		{"id":"541a87ae89b91daf","x":-1180,"y":900,"width":250,"height":60,"color":"1","type":"text","text":"网址"},
-		{"id":"8e673a245d09f56d","x":-100,"y":-800,"width":940,"height":260,"type":"text","text":"##### 李老师的语雀笔记\nhttps://www.yuque.com/lidao996/sre\n\n##### 尹老师的博客园\nhttps://www.cnblogs.com/yinzhengjie/tag"}
+		{"id":"541a87ae89b91daf","type":"text","text":"网址","x":-1180,"y":900,"width":250,"height":60,"color":"1"},
+		{"id":"8e673a245d09f56d","type":"text","text":"##### 李老师的语雀笔记\nhttps://www.yuque.com/lidao996/sre\n\n##### 尹老师的博客园\nhttps://www.cnblogs.com/yinzhengjie/tag","x":-100,"y":-800,"width":940,"height":260}
 	],
 	"edges":[
 		{"id":"8f62663991b7aca0","fromNode":"0c14580aa7eaedce","fromSide":"right","toNode":"ef97f55b5a2b95a1","toSide":"left"},
