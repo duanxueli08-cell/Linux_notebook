@@ -1,3 +1,11 @@
+### 脚本说明
+
+> 背景
+
+先说一下背景！本地删除图片后，图床工具并不能对
+
+
+```
 # clean-obsidian-images.ps1
 # 作者：Qwen / 针对 duanxueli08-cell 的 Obsidian + GitHub 图床环境定制
 # 功能：自动删除 GitHub 图床中未被本地笔记引用的图片
@@ -88,3 +96,4 @@ if ($LASTEXITCODE -eq 0) {
 
 # 可选：清理临时目录（注释掉以便调试）
 # Remove-Item -Recurse -Force $TEMP_REPO_PATH
+```
