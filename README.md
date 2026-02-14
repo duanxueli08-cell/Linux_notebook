@@ -2,6 +2,16 @@
 
 > 笔记内容比较散乱，而且不贴合于实际生产环境，如果以后工作接触到实际的生产环境，我一定大刀阔斧的整改这个笔记！
 
+> 虽然笔记的内容散乱，但是Linux工作上大致就下面这几个模块，掌握了就可以上手干活了！
+
+- 监控告警_日志采集
+- Ansible自动化_编辑shell脚本
+- 多阶段构建dockerfile
+- Jenkins CICD流水线自动发布
+- kubenetes 的基本操作和pod出问题后的排查思路！
+
+
+
 <img width="602" height="634" alt="image" src="https://github.com/user-attachments/assets/7d018ac7-33e2-48dc-90c8-77a4ad4c8e4b" />
 
 #### 另外说说这个职业，这个岗位吧！
