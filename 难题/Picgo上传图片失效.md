@@ -106,6 +106,7 @@ Token：粘贴新的
 
 - 第一，确定图片的文件路径，然后将该路径下的图片手动拖到 Picgo 中上传 github；
 - 第二，批量更改笔记中的文件路径，比如：
+	- 批量更改有很多方式，我是通过 VScode 完成的！
 
 ```
 C:\Program Files\Obsidian\data\Obsidian_Vault\Image\
