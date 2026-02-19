@@ -551,7 +551,7 @@ git push origin master
 git push --tags
 ```
 
-![image-20251120093932234](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251120093932234.png)
+![image-20251120093932234](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251120093932234.png)
 
 #### 多任务构建
 
@@ -1028,11 +1028,11 @@ sudo systemctl status sonarqube
 
 > 在 Marketplace 点击我已经了解风险，然后才能对各插件进行下载
 
-![image-20251122111257843](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251122111257843.png)
+![image-20251122111257843](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251122111257843.png)
 
 重启服务才能生效，安装后界面
 
-![image-20251122111404604](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251122111404604.png)
+![image-20251122111404604](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251122111404604.png)
 
 #### 安装客户端
 
@@ -1118,7 +1118,7 @@ source ~/.bashrc
 sonarqube.duan.org:9000
 ```
 
-![image-20251122113932289](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251122113932289.png)
+![image-20251122113932289](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251122113932289.png)
 
 ### Jenkins集成项目
 
