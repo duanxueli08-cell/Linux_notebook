@@ -1,11 +1,5 @@
 ### Git
 
-#### 面试问题
-
-svn与git的区别
-
-什么是版本控制系统（vcs）
-
 #### 第一部分--安装；创建
 
 ```powershell
@@ -37,7 +31,7 @@ echo "雷霆半月斩" >> test  &&  git  status
 
 ```powershell
 # 撤销工作区的增删改操作（恢复为暂存区版本）
-git restore test                    # 推荐
+git restore test                   # 推荐
 git checkout -- test               # 传统方式
 
 # 撤销暂存区的增删改操作（移回工作区，保留修改）
