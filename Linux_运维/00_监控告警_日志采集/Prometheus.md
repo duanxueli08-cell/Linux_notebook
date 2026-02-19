@@ -155,7 +155,7 @@ scrape_configs:
           # 标签无所谓，但既然写了就要有意义；
 ```
 
-![image-20251123143638325](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251123143638325.png)
+![image-20251123143638325](C:/Program Files/Obsidian/data/Obsidian_Vault/image-20251123143638325.png)
 
 ##### Node Exporter 9100
 
@@ -1192,9 +1192,9 @@ systemctl  restart dingtalk.service
 
 测试截图
 
-![image-20251126165346179](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251126165346179.png)
+![image-20251126165346179](C:/Program Files/Obsidian/data/Obsidian_Vault/image-20251126165346179.png)
 
-![image-20251126165514292](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251126165514292.png)
+![image-20251126165514292](C:/Program Files/Obsidian/data/Obsidian_Vault/image-20251126165514292.png)
 
 ###### Alertmanager 高可用
 
@@ -1778,7 +1778,7 @@ Grafana 图形展示
 
 展示图
 
-![image-20251127174220318](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251127174220318.png)
+![image-20251127174220318](C:/Program Files/Obsidian/data/Obsidian_Vault/image-20251127174220318.png)
 
 ```powershell
 # 做完实验，关闭服务以及服务器自启，节约资源
@@ -1835,7 +1835,7 @@ Grafana 图形展示
 - 与上述添加大致相同，这里使用 14845 模版；
 - 在 Job 那块需要手动修改名称，要与 prometheus.yml 文件中的指标名称相同，这里就用：jmx_exporter
 
-![image-20251127184146540](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251127184146540.png)
+![image-20251127184146540](C:/Program Files/Obsidian/data/Obsidian_Vault/image-20251127184146540.png)
 
 ```powershell
 # 做完实验，关闭服务以及服务器自启，节约资源
