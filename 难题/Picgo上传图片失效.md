@@ -8,6 +8,90 @@
 
 软件的日志路径：C:\Users\Administrator\AppData\Roaming\picgo\picgo.log
 
-### 问题解决过程
+### 问题分析
 
 经过 chatgpt 分析，很可能是 token 失效了！
+
+> 判断依据：
+
+```
+# 日志中关键信息提到：
+statusCode: 401
+"message": "Bad credentials"
+
+# 这说明了什么？
+401 = 未授权
+Bad credentials = 凭证错误
+
+我的 GitHub Token 已经失效、填错、或者权限不足。
+不是网络问题
+不是仓库名问题
+不是分支问题
+就是 Token 问题。
+```
+
+
+```
+我现在用的是 GitHub API 上传
+PicGo 是通过 GitHub REST API 调用：
+PUT /repos/{owner}/{repo}/contents/{path}
+
+这个接口必须使用 Personal Access Token (PAT)。
+
+如果：
+Token 过期
+Token 被撤销
+Token 权限不包含 repo
+Token 复制时多了空格
+换了 GitHub 账号
+
+都会直接报这个 401。
+```
+
+
+### 解决步骤
+
+#### 第一步：去 GitHub 重新生成 Token
+
+进入：
+
+https://github.com/settings/tokens
+
+建议使用：
+
+✔ Fine-grained token（推荐）
+
+创建新 Token 时：
+
+```
+Repository access：
+
+选择 Only select repositories
+
+勾选：Obsidian-Images
+
+Permissions 里：
+
+Contents → Read and write ✅
+
+然后生成。
+
+复制生成的 Token（只会显示一次）。
+```
+
+#### 第二步：重新填入 PicGo
+
+打开 PicGo：
+
+图床设置 → GitHub
+
+设定仓库名：duanxueli08-cell/Obsidian-Images
+
+分支：main（确认一下你仓库默认分支）
+
+Token：粘贴新的
+
+⚠ 不要有空格
+⚠ 不要带引号
+
+保存。
