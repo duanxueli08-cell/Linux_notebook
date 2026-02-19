@@ -165,7 +165,7 @@ git remote add origin https://github.com/duanxueli08-cell/mygit.git
 
 ![image-20251116172114867](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251116172114867.png)
 
-![img](https://deepseek-api-files.obs.cn-east-3.myhuaweicloud.com/raw/2025/11/16/file-bac217ae-c0c9-4628-8d05-7a29e2917147?response-content-disposition=attachment%3B+filename%3D%22image.png%22&AccessKeyId=OD83TSXECLFQNNSZ3IF6&Expires=1763371007&Signature=OzB%2B2STG2qPrnc4umDqVXwdJiuI%3D)
+
 
 - **用户名**: `Shirley.Duan`
 - **显示名称**: `duanxueli08-cell`
