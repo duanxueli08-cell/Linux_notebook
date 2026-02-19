@@ -159,6 +159,10 @@ git remote add origin https://github.com/duanxueli08-cell/mygit.git
 
 
 
+![image-20260219231304143](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20260219231304143.png)
+
+
+
 ![image-20251116174541249](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251116174541249.png)
 
 ![image-20251116172550065](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251116172550065.png)
