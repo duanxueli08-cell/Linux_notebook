@@ -155,19 +155,17 @@ git remote add origin https://github.com/duanxueli08-cell/mygit.git
 
 #### **这些图片，无需多盐！**
 
-![image-20251116174822208](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251116174822208.png)
-
-
-
 ![image-20260219231304143](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20260219231304143.png)
 
 
+![image-20251116174541249.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251116174541249.png)
 
-![image-20251116174541249](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251116174541249.png)
+![image-20251116172550065.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251116172550065.png)
 
-![image-20251116172550065](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251116172550065.png)
 
-![image-20251116172114867](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251116172114867.png)
+![image-20251116172114867.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/image-20251116172114867.png)
+
+
 
 
 
