@@ -255,15 +255,15 @@ docker pull 10.0.0.147/library/nginx:1.1
 >
 >  复制管理 ---> 新建图形 ---> 如图所示配置目标仓库和事件驱动 ---> 点击 ‘复制’ （仅首次点一下，后续自动增量复制）
 
-![image-20251111100612149](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251111100612149.png)
+![image-20251111100612149](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251111100612149.png)
 
 
 
-![image-20251111100539917](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251111100539917.png)
+![image-20251111100539917](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251111100539917.png)
 
-![](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251111095040002.png)
+![](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251111095040002.png)
 
-![image-20251111094630770](C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20251111094630770.png)
+![image-20251111094630770](C:\Program Files\Obsidian\data\Obsidian_Vault\image-20251111094630770.png)
 
 
 
