@@ -535,7 +535,7 @@ Head 插件
 - git地址：https://github.com/mobz/elasticsearch-head
 - 浏览器安装：管理扩展 —— 添加扩展 —— 添加完成后，点击该插件使用
 
-![image-20251204220901976](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251204220901976.png)
+![image-20251204220901976](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251204220901976.png)
 
 ##### 故障自愈
 
@@ -616,7 +616,7 @@ Head 插件
 > - 副本分片完整
 > - 负载均衡
 
-![image-20251204221226150](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251204221226150.png)
+![image-20251204221226150](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251204221226150.png)
 
 Elasticsearch 数据的更改是由主分片决定的，主分片执行完增删改后同步到副分片中；
 
@@ -1484,13 +1484,13 @@ mall-app-2025.12.09
 # 对数据中的标签进行过滤重组，使其可视化，进入 Visualize 库 —— 新建可视化 —— （旧版）-聚合 —— 垂直视图 （可选）—— 分桶 —— X —— 词 —— 选择字段
 ```
 
-![image-20251209163240962](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251209163240962.png)
+![image-20251209163240962](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251209163240962.png)
 
-![image-20251209164316010](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251209164316010.png)
+![image-20251209164316010](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251209164316010.png)
 
-![image-20251209164500979](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251209164500979.png)
+![image-20251209164500979](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251209164500979.png)
 
-![image-20251209172502099](C:/Program Files/Obsidian/data/Obsidian_Vault/Image/image-20251209172502099.png)
+![image-20251209172502099](C:\Program Files\Obsidian\data\Obsidian_Vault\Image\image-20251209172502099.png)
 
 ##### Nginx
 
