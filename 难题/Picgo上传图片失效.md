@@ -95,3 +95,22 @@ Token：粘贴新的
 ⚠ 不要带引号
 
 保存。
+
+
+---
+
+### 补充
+
+到这一步其实已经解决了问题，但是还有一些历史遗留问题没有解决！
+笔记中有很多本地绝对文件路径，这样中本地查看笔记中的图片没有问题，但是中 github 中，以及另一台设备中就看不到对应的图片信息，为此需要将图片的路径信息进行更改！
+
+- 第一，确定图片的文件路径，然后将该路径下的图片手动拖到 Picgo 中上传 github；
+- 第二，批量更改笔记中的文件路径，比如：
+
+```
+C:\Program Files\Obsidian\data\Obsidian_Vault\Image\
+
+https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/
+```
+
+如此，图片的文件名称不变，仅仅将本地存储路径改变为 URL 路径即可！
