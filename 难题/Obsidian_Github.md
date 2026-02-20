@@ -1,6 +1,7 @@
 ### 故障背景
 
 无意间将 windows 系统下 C:\Users\Administrator\.ssh 目录下的密钥对删除导致 Obsidian 笔记推送信息内容失败！如图所示：
+
 ![image.png](https://raw.githubusercontent.com/duanxueli08-cell/Obsidian-Images/main/img/20260220171239365.png)
 
 ### 解决过程
