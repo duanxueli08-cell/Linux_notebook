@@ -15,10 +15,11 @@ fi
 
 echo -e "\e[1;32m[1/8] 正在配置系统基础环境变量 (PS1)...\e[0m"
 # 添加带颜色的高亮终端提示符
-if ! grep -q "PS1=" /root/.bashrc; then
+if ! grep -q "^PS1=" /root/.bashrc; then
 cat >> /root/.bashrc << 'EOF'
 PS1='[\[\e[1;31m\]\u@\h\[\e[0m\]:\[\e[1;35m\]\w\[\e[0m\]]\$ '
 EOF
+. ~/.bashrc
 fi
 
 echo -e "\e[1;32m[2/8] 正在备份默认源并配置阿里云 DEB822 格式软件源...\e[0m"
