@@ -231,7 +231,8 @@ gitlab-ctl start # 启动gitlab
 >
 > 默认用户为root，其密码是随机生成
 >
-> 如果没有在配置文件中对密码做初始化设置,可以从这个文件找到初始密码：cat /etc/gitlab/initial_root_password
+> 如果没有在配置文件中对密码做初始化设置,可以从这个文件找到初始密码：
+> cat /etc/gitlab/initial_root_password
 
 #### 新建项目
 
