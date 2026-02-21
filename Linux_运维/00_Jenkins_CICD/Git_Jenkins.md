@@ -109,7 +109,7 @@ echo "勇敢牛牛不怕困难^_^"
 # 创建SSH Key ；
 # 会在指定目录下有没有id_rsa和id_rsa.pub这两个文件 （默认是/root）
 # id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人。
-ssh-keygen -t rsa -C "duan@163.com"
+ssh-keygen -t rsa -C "duan@gitlab.com"
 # 三次回车在/root/.ssh/目录中生成id_rsa.pub和id_rsa
 # 登录github,打开” settings”中的SSH Keys页面，然后点击“Add SSH Key”,填上任意title（比如：测试远程demo），在Key文本框里黏贴id_rsa.pub文件的内容。
 # 然后在右上角找到“create a new repo”创建一个新的仓库  --> New repository 
